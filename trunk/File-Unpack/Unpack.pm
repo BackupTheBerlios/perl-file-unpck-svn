@@ -11,6 +11,10 @@
 #  -> works, 
 # sudo zypper -v in --from 12 perl-Compress-Raw-Zlib
 #  -> works, if d.l.p is repo #12.
+#
+# TODO: 
+# evaluate File::Extract - Extract Text From Arbitrary File Types 
+#       (HTML, PDF, Plain, RTF, Excel)
 
 package File::Unpack;
 
@@ -40,7 +44,7 @@ use Data::Dumper;
 
 =head1 NAME
 
-File::Unpack - An aggressive achive file unpacker, based on mime-types
+File::Unpack - An aggressive archive file unpacker, based on mime-types
 
 =head1 VERSION
 
@@ -382,7 +386,7 @@ the same name already exists in the destination subdir, an additional subdir
 component is created to avoid any conflicts.
 For each extracted file, a record is written to the logfile.
 When unpacking is finished, the logfile contains one valid JSON structure.
-Unpack achives this by writing suitable prolog and epilog lines to the logfile.
+Unpack achieves this by writing suitable prolog and epilog lines to the logfile.
 
 The actual unpacking is dispatched to mime-type specfic mime handlers,
 selected using C<mime>. A mime-handler can either be built-in code, or an
@@ -1524,6 +1528,12 @@ L<http://cpanratings.perl.org/d/File-Unpack>
 L<http://search.cpan.org/dist/File-Unpack/>
 
 =back
+
+=head1 SOURCE REPOSITORY
+
+L<https://developer.berlios.de/projects/perl-file-unpck>
+
+svn co L<https://svn.berlios.de/svnroot/repos/perl-file-unpck/trunk/File-Unpack>
 
 
 =head1 ACKNOWLEDGEMENTS
