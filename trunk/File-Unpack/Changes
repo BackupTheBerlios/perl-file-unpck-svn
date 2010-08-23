@@ -1,5 +1,8 @@
 Revision history for File-Unpack
 
+0.17	jw, Mon Aug 23 11:36:04 CEST 2010
+	Made the test suite run again with -t
+
 0.16	jw, Mon Aug 23 01:28:09 CEST 2010
 	added tar handler. debugged dir unpacking, copy-in, 
 	destdir=jail, and def_mime_handler_fmt.

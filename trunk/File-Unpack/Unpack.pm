@@ -44,11 +44,15 @@ File::Unpack - An aggressive achive file unpacker, based on mime-types
 
 =head1 VERSION
 
-Version 0.16
+Version 0.17
 
 =cut
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
+
+$ENV{PATH} = '/usr/bin:/bin';
+$ENV{SHELL} = '/bin/sh';
+delete $ENV{ENV};
 
 my @tar = ('/bin/tar');
 ## osc co loves to create directories with : in them. 
