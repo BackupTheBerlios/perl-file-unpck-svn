@@ -12,7 +12,7 @@
 #   MakeMaker Parameters:
 
 #     ABSTRACT_FROM => q[Unpack.pm]
-#     AUTHOR => q[Juergen Weigert <jw@suse.de>]
+#     AUTHOR => q[Juergen Weigert <jnw@cpan.org>]
 #     BUILD_REQUIRES => {  }
 #     LICENSE => q[perl]
 #     NAME => q[File::Unpack]
@@ -20,7 +20,7 @@
 #     PREREQ_PM => { File::Copy=>q[0], File::LibMagic=>q[0], File::MimeInfo::Magic=>q[0], IPC::Run=>q[0], BSD::Resource=>q[0], Compress::Raw::Zlib=>q[2.024], String::ShellQuote=>q[0], Text::Sprintf::Named=>q[0], Test::More=>q[0], Compress::Raw::Bzip2=>q[0], File::Path=>q[0], Filesys::Statvfs=>q[0], Compress::Raw::Lzma=>q[0], JSON=>q[0] }
 #     VERSION_FROM => q[Unpack.pm]
 #     clean => { FILES=>q[File-Unpack-*] }
-#     dist => { COMPRESS=>q[gzip -9f], SUFFIX=>q[gz] }
+#     dist => { COMPRESS=>q[bzip2 -9f], SUFFIX=>q[bz2] }
 
 # --- MakeMaker post_initialize section:
 
@@ -255,8 +255,8 @@ TAR = tar
 TARFLAGS = cvf
 ZIP = zip
 ZIPFLAGS = -r
-COMPRESS = gzip -9f
-SUFFIX = gz
+COMPRESS = bzip2 -9f
+SUFFIX = bz2
 SHAR = shar
 PREOP = $(NOECHO) $(NOOP)
 POSTOP = $(NOECHO) $(NOOP)
@@ -490,7 +490,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) 'version:            0.19' >> META_new.yml
 	$(NOECHO) $(ECHO) 'abstract:           An aggressive archive file unpacker, based on mime-types' >> META_new.yml
 	$(NOECHO) $(ECHO) 'author:' >> META_new.yml
-	$(NOECHO) $(ECHO) '    - Juergen Weigert <jw@suse.de>' >> META_new.yml
+	$(NOECHO) $(ECHO) '    - Juergen Weigert <jnw@cpan.org>' >> META_new.yml
 	$(NOECHO) $(ECHO) 'license:            perl' >> META_new.yml
 	$(NOECHO) $(ECHO) 'distribution_type:  module' >> META_new.yml
 	$(NOECHO) $(ECHO) 'configure_requires:' >> META_new.yml
@@ -812,7 +812,7 @@ testdb_static :: testdb_dynamic
 ppd :
 	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0.19">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT>An aggressive archive file unpacker, based on mime-types</ABSTRACT>' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '    <AUTHOR>Juergen Weigert &lt;jw@suse.de&gt;</AUTHOR>' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '    <AUTHOR>Juergen Weigert &lt;jnw@cpan.org&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="BSD::Resource" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Compress::Raw::Bzip2" />' >> $(DISTNAME).ppd
