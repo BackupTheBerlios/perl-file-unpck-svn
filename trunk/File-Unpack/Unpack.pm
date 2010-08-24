@@ -1386,8 +1386,10 @@ sub mime
   my $mime1 = $flm->checktype_contents($in{buf});
   return [ 'x-system/x-error', undef, $mime1 ] if $mime1 =~ m{^cannot open};
 
-  my $enc; ($mime1, $enc) = ($1,$2) if $mime1 =~ m{^(.*?);\s*(.*)$};
-  $enc =~ s{^charset=}{};
+  # in SLES11 we get 'text/plain charset=utf-8' without semicolon.
+  my $enc; ($mime1, $enc) = ($1,$2) if $mime1 =~ m{^(.*?);\s*(.*)$} or
+                                       $mime1 =~ m{^(.*?)\s+(.*)$};
+  $enc =~ s{^charset=}{} if defined $enc;
   my @r = ($mime1, $enc, $flm->describe_contents($in{buf}) );
   my $mime2;
 
