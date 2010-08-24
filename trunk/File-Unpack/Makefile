@@ -17,7 +17,7 @@
 #     LICENSE => q[perl]
 #     NAME => q[File::Unpack]
 #     PL_FILES => {  }
-#     PREREQ_PM => { File::Copy=>q[0], File::LibMagic=>q[0], File::MimeInfo::Magic=>q[0], IPC::Run=>q[0], BSD::Resource=>q[0], Compress::Raw::Zlib=>q[2.024], String::ShellQuote=>q[0], Test::More=>q[0], Compress::Raw::Bzip2=>q[0], File::Path=>q[0], Filesys::Statvfs=>q[0], Compress::Raw::Lzma=>q[0], JSON=>q[0] }
+#     PREREQ_PM => { File::Copy=>q[0], File::LibMagic=>q[0], File::MimeInfo::Magic=>q[0], IPC::Run=>q[0], BSD::Resource=>q[0], Compress::Raw::Zlib=>q[2.024], String::ShellQuote=>q[0], Text::Sprintf::Named=>q[0], Test::More=>q[0], Compress::Raw::Bzip2=>q[0], File::Path=>q[0], Filesys::Statvfs=>q[0], Compress::Raw::Lzma=>q[0], JSON=>q[0] }
 #     VERSION_FROM => q[Unpack.pm]
 #     clean => { FILES=>q[File-Unpack-*] }
 #     dist => { COMPRESS=>q[gzip -9f], SUFFIX=>q[gz] }
@@ -511,6 +511,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '    JSON:                 0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    String::ShellQuote:   0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    Test::More:           0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Text::Sprintf::Named:  0' >> META_new.yml
 	$(NOECHO) $(ECHO) 'no_index:' >> META_new.yml
 	$(NOECHO) $(ECHO) '    directory:' >> META_new.yml
 	$(NOECHO) $(ECHO) '        - t' >> META_new.yml
@@ -826,6 +827,7 @@ ppd :
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="JSON::" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="String::ShellQuote" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Test::More" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Text::Sprintf::Named" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="i586-linux-thread-multi-5.12" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    </IMPLEMENTATION>' >> $(DISTNAME).ppd
