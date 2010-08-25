@@ -647,20 +647,29 @@ sub unpack
 	      my $unpacked = $self->_run_mime_handler($h, $archive, $destdir, 
 	      				$new_name, $m->[0], $m->[2], $self->{configdir});
 
-	      if ($archive =~ m{^\Q$self->{destdir}\E})
+	      if (ref $unpacked)
 	        {
-	          $self->{done}{$archive} = $unpacked;
-
-		  # to delete it, we should know if it was created during unpack.
-		  $data->{cmd} = $h->{fmt_p};
-		  $data->{unpacked} = $unpacked;
-	          $self->logf($archive => $data);
+		  $data->{failed} = $h->{fmt_p};
+		  $data->{error} = $unpacked->{error};
+		  $self->logf($archive => $data);
 		}
+	      else
+		{
+		  if ($archive =~ m{^\Q$self->{destdir}\E})
+		    {
+		      $self->{done}{$archive} = $unpacked;
 
-	      my $newdestdir = $unpacked;
-	      $newdestdir =~ s{/+[^/]+}{} unless -d $newdestdir;	        # make sure it is a directory
-	      $newdestdir = $destdir unless $newdestdir =~ m{^\Q$self->{destdir}\E/};	# make sure it does not escape
-	      $self->unpack($unpacked, $newdestdir);
+		      # to delete it, we should know if it was created during unpack.
+		      $data->{cmd} = $h->{fmt_p};
+		      $data->{unpacked} = $unpacked;
+		      $self->logf($archive => $data);
+		    }
+
+		  my $newdestdir = $unpacked;
+		  $newdestdir =~ s{/+[^/]+}{} unless -d $newdestdir;	        # make sure it is a directory
+		  $newdestdir = $destdir unless $newdestdir =~ m{^\Q$self->{destdir}\E/};	# make sure it does not escape
+		  $self->unpack($unpacked, $newdestdir);
+		}
 	    }
 	}
     }
@@ -906,6 +915,13 @@ sub _run_mime_handler
       my @found = grep { $_ ne '.' and $_ ne '..' } readdir DIR;
       closedir DIR;
       print STDERR "dot_dot_safeguard=$dot_dot_safeguard, i=$i, found=$found[0]\n" if $self->{verbose} > 1;
+      unless (@found)
+        {
+	  rmdir $jail_base;
+	  my $name = $1 if $args->{src} =~ m{/([^/]+)$};
+          print STDERR "oops(i=$i): nothing unpacked?? Adding $name as is.\n" if $self->{verbose};
+	  return { error => "nothing unpacked" };
+	}
       last if scalar @found != 1;
       $wanted_name = $found[0] if $i == $dot_dot_safeguard;
       last unless -d $jail_base . "/" . $found[0];
@@ -1060,6 +1076,7 @@ sub mime_handler
   @args = ($name) unless @args;
   @args = ([@args]) unless ref $args[0];
 
+  # cut away the path prefix from name. And use / instead of = in the mime name.
   $name =~ s{(.*/)?(.*?)=(.*?)$}{$2/$3};
 
   push @{$args[0]}, @def_mime_handler_fmt unless $#{$args[0]} or defined $args[1];
@@ -1076,6 +1093,7 @@ sub mime_handler
     };
 
   delete $self->{mime_orcish};	# to be rebuilt in find_mime_handler()
+
   return $self->{mime_handler};
 }
 
@@ -1137,7 +1155,7 @@ sub mime_handler_dir
       # now push them, sorted by prio
       for my $h (sort { $h{$a}{p} <=> $h{$b}{p} } keys %h)
         {
-	  $self->mime_handler($h, undef, $h{$h}{a});
+	  $self->mime_handler(Cwd::fast_abs_path($h{$h}{a}));
 	}
     }
   return $self->{mime_handler};

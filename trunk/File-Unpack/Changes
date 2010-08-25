@@ -1,5 +1,11 @@
 Revision history for File-Unpack
 
+...	
+	Made external mime-handlers work.
+	Remember absolut path, call mime_type() correctly.
+	Started to propagate errors from _run_mime_handler() to unpack().
+	mime(): In SLES11 we get 'text/plain charset=utf-8' without semicolon.
+
 0.20	jw, Tue Aug 24 21:15:49 CEST 2010
 	POD polishing. Synopsis now has some illustrative code.
 
