@@ -50,11 +50,11 @@ File::Unpack - An aggressive archive file unpacker, based on mime-types
 
 =head1 VERSION
 
-Version 0.20
+Version 0.21
 
 =cut
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 $ENV{PATH} = '/usr/bin:/bin';
 $ENV{SHELL} = '/bin/sh';
@@ -461,7 +461,16 @@ than configured with C<minfree>, a warning can be printed and unpacking is
 optionally paused. It also monitors the mime-handlers progress reading the archive 
 at source_path and reports percentages to STDERR (if verbose is 1 or more).
 
-After the mime-handler is finished, they system considers replacing the
+After the mime-handler is finished, C<unpack> examines the files it created.
+If it created no files in F<destdir>, an error is reported, and the
+F<source_path> may be passed to other unpackers, or finally be added to the log as is.
+
+If the mime-handler wants to express, that F<source_path> is already unpacked as far as possible
+and it should be added to the log without any errir messages, it should create a symbolic link 
+F<destdir> pointing to F<source_path>.
+
+
+The system considers replacing the
 directory with a file, under the following conditions:
 
 =over
@@ -482,21 +491,13 @@ The file must not already exist in the parent directory.
 
 =back
 
-A mime-handler trying to place files outside of the specified
-destination_path may receive 'permission denied' conditions. 
-# In this case, the handler 
-# can ask to be rerun with write permission to a certain number of parent
-# directories by printing one or multiple strings of the form "../../file" 
-# and exiting with a nonzero status. Unpack will respond by creating the
-# needed number of additional subdirectories, each named '_' (two in this
-# example: "./_/_" ), and will call the handler again with this extended
-# destination_path. 
 C<unpack> prepares 20 empty subdirectory levels and chdirs the unpacker 
 in there. This number can be adjusted using C<new(dot_dot_safeguard => 20)>.
 A directory 20 levels up from the current working dir has mode 0 while 
 the mime-handler runs. C<unpack> can optionally chmod(0) the parent of the subdirectory 
 after it chdirs the unpacker inside. Use C<new(jail_chmod0 => 1)> for this, default 
-is off.
+is off. If enabled, a mime-handler trying to place files outside of the specified
+destination_path may receive 'permission denied' conditions. 
 
 These are special hacks to keep badly constructed 
 tar balls, cpio, or zip archives at bay.
@@ -652,6 +653,34 @@ sub unpack
 		  $data->{failed} = $h->{fmt_p};
 		  $data->{error} = $unpacked->{error};
 		  $self->logf($archive => $data);
+		}
+	      elsif ($unpacked eq "$destdir/$new_name" and 
+	             readlink($unpacked)||'' eq $archive)
+	        {
+		  # a symlink backwards means, there is nothing to unpack here. take it as is.
+		  unlink $unpacked;
+		  $data->{passed} = $h->{name};
+
+		  if ($archive =~ m{^\Q$self->{destdir}\E})
+		    {
+		      # if inside, we just flag it done and log it.
+		      $self->{done}{$archive} = $archive;
+		      $self->logf($archive => $data);
+		    }
+		  else
+		    {
+		      # if outside, we copy it in, flag it done there, and log it here.
+		      if (File::Copy::copy($archive, $unpacked))
+		        {
+		          $self->{done}{$archive} = $unpacked;
+			  $self->logf($unpacked => $data);
+			}
+		      else
+		        {
+		          $data->{error} = "copy($archive, $unpacked): $!";
+			  $self->logf($archive => $data);
+			}
+		    }
 		}
 	      else
 		{
@@ -1055,9 +1084,9 @@ A wildcard before the '=' sign lowers precedence more than one after it.
 
 The mapping takes place when C<mime_handler_dir> is called, later additions are 
 not recognized. C<mime_handler> does not do any implicit expansions. Call it
-multiple times with the same command and different names if needed.
+multiple times with the same handler command and different names if needed.
 The default argument list is "%(src)s %(destdir)s %(destfile)s %(mime)s %(descr)s %(configdir)s" --
-this is applied, if no args are given and no redirections are given.
+this is applied, if no args are given and no redirections are given. See also C<unpack> for more semantics and how a handler should behave.
 
 Both methods return an ARRAY-ref of all currently known mime handlers.
 
