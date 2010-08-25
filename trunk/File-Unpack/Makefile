@@ -187,13 +187,10 @@ PERL_ARCHIVE_AFTER =
 
 TO_INST_PM = Unpack.pm \
 	children_fuser.pl \
-	file_unpack.pl \
-	run_cmd.pl
+	file_unpack.pl
 
 PM_TO_BLIB = file_unpack.pl \
 	$(INST_LIB)/File/file_unpack.pl \
-	run_cmd.pl \
-	$(INST_LIB)/File/run_cmd.pl \
 	Unpack.pm \
 	$(INST_LIB)/File/Unpack.pm \
 	children_fuser.pl \
@@ -845,7 +842,6 @@ ppd :
 pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
 	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', q[$(PM_FILTER)], '\''$(PERM_DIR)'\'')' -- \
 	  file_unpack.pl $(INST_LIB)/File/file_unpack.pl \
-	  run_cmd.pl $(INST_LIB)/File/run_cmd.pl \
 	  Unpack.pm $(INST_LIB)/File/Unpack.pm \
 	  children_fuser.pl $(INST_LIB)/File/children_fuser.pl 
 	$(NOECHO) $(TOUCH) pm_to_blib
