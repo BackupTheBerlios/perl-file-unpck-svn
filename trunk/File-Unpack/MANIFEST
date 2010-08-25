@@ -5,6 +5,8 @@ README
 Unpack.pm
 file_unpack.pl
 
+helper/text=x-shellscript
+
 t/00-load.t
 t/manifest.t
 t/pod-coverage.t
