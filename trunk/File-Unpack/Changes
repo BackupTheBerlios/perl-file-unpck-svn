@@ -5,6 +5,8 @@ Revision history for File-Unpack
 	Added t/04-subdir.t, 
 	Added first support for running unpack() under -T
 	Replaced MANIFEST.SKIP with a filter in t/manifest.t
+	Fixed t/02-mime.t to survive missing shared-mime-info.
+	(Makefile.PL cannot require non-perl packages, can it?)
 
 0.21	jw, Wed Aug 25 22:15:48 CEST 2010
         Added 'nothing-to-do' semantic for mime-helpers: Point back by symlink.
