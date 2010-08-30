@@ -9,10 +9,10 @@
 # 2010-08-03, jw -- fixed -v.
 
 use Data::Dumper;
-use Getopt::Long;
+use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use FindBin;
-BEGIN { unshift @INC, "$1/blib/lib" if $FindBin::Bin =~ m{(.*)} };
+use lib "$FindBin::RealBin/blib/lib";
 use File::Unpack;
 
 my $version = $File::Unpack::VERSION;
@@ -22,10 +22,11 @@ my $help;
 my $mime_only;
 my @mime_handler_dirs;
 
-my %opt = ( verbose => 1, maxfilesize => '100M');
+my %opt = ( verbose => 1, maxfilesize => '100M', one_shot => 0);
 
 GetOptions(
 	"verbose|v+"   => \$opt{verbose},
+	"version|V"    => sub { print "$version\n"; exit },
 	"quiet"        => sub { $opt{verbose} = 0; },
 	"destdir|C=s"  => \$opt{destdir},
 	"exclude|E=s"  => \@exclude,
@@ -33,6 +34,7 @@ GetOptions(
 	"vcs|include-vcs!" => sub { $exclude_vcs = !$_[1]; },
 	"help|?"       => \$help,
 	"logfile=s"    => \$opt{logfile},
+	"one_shot|1"   => \$opt{one_shot},
 	"mimetype|m+"  => \$mime_only,
 	"unpack-include-dir|I|u=s" => \@mime_handler_dirs,
 	"maxfilesize=s"=> \$opt{maxfilesize},
@@ -52,7 +54,8 @@ Valid options are:
  -q     Be quiet, not verbose.
 
  -C --destdir dir
-        Directory, where to write output files to. 
+        Directory, where to place the output file or directory.
+	A subdirectory is created, if there are more than one files to unpack.
 	Default: current dir.
 
  -E --exclude glob.pat
@@ -64,6 +67,9 @@ Valid options are:
  	Group switch for directory glob patterns of most version control systems.
 	This affects at least SCCS, RCS, CVS, .svn, .git, .hg, .osc .
         Default: exclude-vcs=$exclude_vcs.
+
+ -1 --one-shot
+ 	Make unpacker non-agressive. Perform one level of unpacking only.
 
  -h --help -?
         Print this online help.

@@ -13,11 +13,11 @@
 
 #     ABSTRACT_FROM => q[Unpack.pm]
 #     AUTHOR => q[Juergen Weigert <jnw@cpan.org>]
-#     BUILD_REQUIRES => {  }
+#     BUILD_REQUIRES => { Pod::Coverage=>q[0.18], Test::More=>q[0], Test::Pod::Coverage=>q[1.08], FindBin=>q[0], Test::Pod=>q[1.22], Test::CheckManifest=>q[0.9] }
 #     LICENSE => q[perl]
 #     NAME => q[File::Unpack]
 #     PL_FILES => {  }
-#     PREREQ_PM => { File::LibMagic=>q[0], IPC::Run=>q[0], Text::Sprintf::Named=>q[0], File::Path=>q[0], Filesys::Statvfs=>q[0], File::Copy=>q[0], File::MimeInfo::Magic=>q[0], BSD::Resource=>q[0], Compress::Raw::Zlib=>q[2.024], Carp=>q[0], String::ShellQuote=>q[0], Test::More=>q[0], Compress::Raw::Bzip2=>q[0], File::Temp=>q[0], Compress::Raw::Lzma=>q[0], JSON=>q[0], Cwd=>q[0] }
+#     PREREQ_PM => { File::LibMagic=>q[0], FindBin=>q[0], IPC::Run=>q[0], Pod::Usage=>q[0], Test::Pod=>q[1.22], Text::Sprintf::Named=>q[0], File::Path=>q[0], Filesys::Statvfs=>q[0], Pod::Coverage=>q[0.18], Getopt::Long=>q[0], File::Copy=>q[0], Test::Pod::Coverage=>q[1.08], File::MimeInfo::Magic=>q[0], BSD::Resource=>q[0], Compress::Raw::Zlib=>q[2.024], Carp=>q[0], String::ShellQuote=>q[0], Test::More=>q[0], Compress::Raw::Bzip2=>q[0], File::Temp=>q[0], Compress::Raw::Lzma=>q[0], JSON=>q[0], Test::CheckManifest=>q[0.9], Cwd=>q[0] }
 #     VERSION_FROM => q[Unpack.pm]
 #     clean => { FILES=>q[File-Unpack-*] }
 #     dist => { COMPRESS=>q[bzip2 -9f], SUFFIX=>q[bz2] }
@@ -493,7 +493,12 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) 'configure_requires:' >> META_new.yml
 	$(NOECHO) $(ECHO) '    ExtUtils::MakeMaker:  0' >> META_new.yml
 	$(NOECHO) $(ECHO) 'build_requires:' >> META_new.yml
-	$(NOECHO) $(ECHO) '    ExtUtils::MakeMaker:  0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    FindBin:              0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Pod::Coverage:        0.18' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Test::CheckManifest:  0.9' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Test::More:           0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Test::Pod:            1.22' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Test::Pod::Coverage:  1.08' >> META_new.yml
 	$(NOECHO) $(ECHO) 'requires:' >> META_new.yml
 	$(NOECHO) $(ECHO) '    BSD::Resource:        0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    Carp:                 0' >> META_new.yml
@@ -507,10 +512,11 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '    File::Path:           0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    File::Temp:           0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    Filesys::Statvfs:     0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Getopt::Long:         0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    IPC::Run:             0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    JSON:                 0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Pod::Usage:           0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    String::ShellQuote:   0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Test::More:           0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    Text::Sprintf::Named:  0' >> META_new.yml
 	$(NOECHO) $(ECHO) 'no_index:' >> META_new.yml
 	$(NOECHO) $(ECHO) '    directory:' >> META_new.yml
@@ -826,10 +832,11 @@ ppd :
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Path" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Temp" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Filesys::Statvfs" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Getopt::Long" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="IPC::Run" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="JSON::" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Pod::Usage" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="String::ShellQuote" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Test::More" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Text::Sprintf::Named" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="i586-linux-thread-multi-5.12" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> $(DISTNAME).ppd

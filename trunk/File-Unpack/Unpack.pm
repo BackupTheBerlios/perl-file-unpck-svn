@@ -11,17 +11,20 @@
 #  -> works, 
 # sudo zypper -v in --from 12 perl-Compress-Raw-Zlib
 #  -> works, if d.l.p is repo #12.
-#
+# 
 # TODO: 
-# evaluate File::Extract - Extract Text From Arbitrary File Types 
+# * evaluate File::Extract - Extract Text From Arbitrary File Types 
 #       (HTML, PDF, Plain, RTF, Excel)
 #
-# make taint checks really check things, instead of $1 if m{^(.*)$};
+# * make taint checks really check things, instead of $1 if m{^(.*)$};
+#
+# * Implement disk space monitoring.
 
 package File::Unpack;
 
 BEGIN
 {
+ # Requires: shared-mime-info
  eval 'use File::LibMagic;';		# only needed in mime(); mime() dies, if missing
  eval 'use File::MimeInfo::Magic;';	# only needed in mime(); okay, if missing.
  eval 'use Compress::Raw::Lzma;';	# only needed in mime(); for finding lzma.
@@ -66,6 +69,8 @@ my $UNCOMP_BUFSZ = 1024;
 
 my @builtin_mime_handlers = (
   # mimetype pattern          # suffix pattern      # command with redirects, as defined with IPC::Run::run
+
+  # Requires: xz bzip2 gzip unzip
   [ 'application=%lzma',      qr{\.(xz|lz(ma)?)$}i, [qw(/usr/bin/lzcat)],        qw(< %(src)s > %(destfile)s) ],
   [ 'application=%lzma',      qr{\.(xz|lz(ma)?)$}i, [qw(/usr/bin/xz      -dc -f %(src)s)], qw(> %(destfile)s) ],
   [ 'application=%bzip2',     qr{\.bz2$}i,          [qw(/usr/bin/bunzip2 -dc -f %(src)s)], qw(> %(destfile)s) ],
@@ -75,10 +80,14 @@ my @builtin_mime_handlers = (
   [ 'application=zip',        qr{\.(zip|jar|sar)$}i,  [qw(/usr/bin/unzip -P no_pw -q -o %(src)s)] ],
   [ 'application=%zip',       qr{\.(zip|jar|sar)$}i,  [qw(/usr/bin/unzip -P no_pw -q -o %(src)s)] ],
 
+  # Requires: tar rpm cpio
   [ 'application=%tar',       qr{\.(tar|gem)$}i,      [\&_locate_tar,  qw(-xf %(src)s)] ],
   [ 'application=%tar+bzip2', qr{\.tar\.bz2$}i,       [\&_locate_tar, qw(-jxf %(src)s)] ],
   [ 'application=%tar+gzip',  qr{\.t(ar\.gz|gz)$}i,   [\&_locate_tar, qw(-zxf %(src)s)] ],
   [ 'application=%rpm',       qr{\.(src\.r|s|r)pm$}i, [qw(/usr/bin/rpm2cpio %(src)s)], '|', [\&_locate_cpio_i] ],
+
+  # Requires: poppler-tools
+  [ 'application/pdf',	      qr{\.pdf$}i, [qw(/usr/bin/pdftotext %(src)s %(destfile)s.txt)], '&', [qw(/usr/bin/pdfimages -j %(src)s pdfimages)] ],
 );
 
 sub _locate_tar
@@ -121,7 +130,8 @@ sub _locate_cpio_i
 =head1 SYNOPSIS
 
 File::Unpack is an aggressive unpacker for archive files. We call it aggressive, 
-because it recursivly descends into any freshly unpacked file, if it appears to be an archive itself.
+because it can recursivly descend into any freshly unpacked file, if it appears to be an 
+archive itself.
 It also uncompresses files where needed. The ultimate goal of File::Unpack is
 to extract as much readable text (ascii or any other encoding) as possible.
 Most of the currently known archive file formats are supported.
@@ -161,12 +171,12 @@ well as exclude patterns.
 
 my $u = new(destdir => '.', logfile => \*STDOUT, maxfilesize => '100M', verbose => 1);
 
-Creates an unpacker instance. Destdir must be writable; all output files and directories 
-are placed inside destdir. Subdirectories will be created in an attempt to reflect the 
+Creates an unpacker instance. The parameter C<destdir> must be writable location; all output 
+files and directories are placed inside destdir. Subdirectories will be created in an attempt to reflect the 
 structure of the input. Destdir defaults to the current directory; relative paths 
 are resolved immediatly, so that chdir() after calling new is harmless.
 
-The parameter logfile can be a reference to a scalar, a filename, or a filedescriptor.
+The parameter C<logfile> can be a reference to a scalar, a filename, or a filedescriptor.
 The logfile starts with a JSON formatted prolog, where all lines start 
 with printable characters.
 For each file unpacked, a one line record is appended, started with a single 
@@ -175,10 +185,14 @@ Each record is formatted as a JSON " key: value\n" pair, where key is the filena
 The logfile is terminated by an epilog, where each line starts with a printable character.
 Per default, the logfile is sent to STDOUT. 
 
-The parameter maxfilesize is a safeguard against compressed sparse files. Such files could 
+The parameter C<maxfilesize> is a safeguard against compressed sparse files. Such files could 
 easily fill up any available disk space when unpacked. Files hitting this limit will 
 be silently truncated.  Check the logfile records or epilog to see if this has happened.
-BSD::Resource is used manipulate RLIMIT_FSIZE.
+BSD::Resource is used manipulate RLIMIT_FSIZE. To be implemented.
+
+The parameter C<one_shot> can optionally be set to non-zero, to limit unpacking to one level of unpacking.
+Unpacking of very well known compressed archives like e.g. tar.bz2 is considered one level only. The exact semantics 
+depend on the configured mime helpers.
 
 =head2 exclude
 
@@ -369,6 +383,8 @@ sub new
   # used in unpack() to jail mime_handlers deep inside destdir:
   $obj{dot_dot_safeguard} = 20 unless defined $obj{dot_dot_safeguard};
   $obj{jail_chmod0} ||= 0;
+  # used in unpack, blocks recursion after archive unpacking
+  $obj{one_shot} ||= 0;
 
   carp "We are running as root: Malicious archives may clobber your filesystem.\n" unless $>;
 
@@ -702,7 +718,17 @@ sub unpack
 		  my $newdestdir = $unpacked;
 		  $newdestdir =~ s{/+[^/]+}{} unless -d $newdestdir;	        # make sure it is a directory
 		  $newdestdir = $destdir unless $newdestdir =~ m{^\Q$self->{destdir}\E/};	# make sure it does not escape
-		  $self->unpack($unpacked, $newdestdir);
+		  if ($self->{one_shot})
+		    {
+		      local $self->{mime_orcish};
+		      local $self->{mime_handler};
+
+		      $self->unpack($unpacked, $newdestdir);
+		    }
+		  else
+		    {
+		      $self->unpack($unpacked, $newdestdir);
+		    }
 		}
 	    }
 	}
