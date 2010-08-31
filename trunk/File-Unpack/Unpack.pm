@@ -64,6 +64,7 @@ $ENV{SHELL} = '/bin/sh';
 delete $ENV{ENV};
 
 # Compress::Raw::Bunzip2 needs several 100k of input data, we special case this.
+# File::LibMagic wants to read ca. 70k of input data, before it says application/vnd.ms-excel
 # Anything else works with 1024.
 my $UNCOMP_BUFSZ = 1024;
 
@@ -76,14 +77,22 @@ my @builtin_mime_handlers = (
   [ 'application=%bzip2',     qr{\.bz2$}i,          [qw(/usr/bin/bunzip2 -dc -f %(src)s)], qw(> %(destfile)s) ],
   [ 'application=%gzip',      qr{\.gz$}i,           [qw(/usr/bin/gzip -dc -f %(src)s)], qw(> %(destfile)s) ],
 
+  # Requires: sharutils
+  [ 'text/x-uuencode',        qr{\.uu$}i,           [qw(/usr/bin/uudecode -o %(destfile)s %(src)s)] ],
+
   # xml.summary.Mono.Security.Authenticode is twice inside of monodoc-1.0.4.tar.gz/Mono.zip/ -> use -o
   [ 'application=zip',        qr{\.(zip|jar|sar)$}i,  [qw(/usr/bin/unzip -P no_pw -q -o %(src)s)] ],
   [ 'application=%zip',       qr{\.(zip|jar|sar)$}i,  [qw(/usr/bin/unzip -P no_pw -q -o %(src)s)] ],
+
+  # Requires: unrar
+  [ 'application=%rar',	      qr{\.rar$}i,            [qw(/usr/bin/unrar x -o- -p- -inul -kb -y %(src)s)] ],
 
   # Requires: tar rpm cpio
   [ 'application=%tar',       qr{\.(tar|gem)$}i,      [\&_locate_tar,  qw(-xf %(src)s)] ],
   [ 'application=%tar+bzip2', qr{\.tar\.bz2$}i,       [\&_locate_tar, qw(-jxf %(src)s)] ],
   [ 'application=%tar+gzip',  qr{\.t(ar\.gz|gz)$}i,   [\&_locate_tar, qw(-zxf %(src)s)] ],
+  [ 'application=%tar+lzma',  qr{\.tar\.lzma$}i,      [qw(/usr/bin/lzcat)], qw(< %(src)s |), [\&_locate_tar, qw(-xf -)] ],
+  [ 'application=%tar+lzma',  qr{\.tar\.lzma$}i,      [qw(/usr/bin/xz -dc -f %(src)s)], '|', [\&_locate_tar, qw(-xf -)] ],
   [ 'application=%rpm',       qr{\.(src\.r|s|r)pm$}i, [qw(/usr/bin/rpm2cpio %(src)s)], '|', [\&_locate_cpio_i] ],
 
   # Requires: poppler-tools
@@ -295,6 +304,7 @@ sub log
   if (my $fp = $self->{lfp})
     {
       print $fp @_;
+      $self->{lfp_printed}++;
     }
 }
 
@@ -396,6 +406,7 @@ sub new
     {
       $obj{lfp} = $obj{logfile};
     }
+  $obj{lfp_printed} = 0;
 
   if ($obj{maxfilesize})
     {
@@ -422,14 +433,15 @@ sub new
 sub DESTROY
 {
   my $self = shift;
-  if ($self->{lfp} and tell $self->{lfp})
+  if ($self->{lfp} and $self->{lfp_printed})
     {
       # this should never happen. 
       # always delete $self->{lfp} manually, when done.
       ## {{
-      $self->log(qq[\n}, "error":"unexpected destructor seen"};\n]);
+      $self->log(qq[\n}, "error":"unexpected destructor seen; lfp_printed=$self->{lfp_printed}"};\n]);
       close $self->{lfp} if $self->{lfp} ne $self->{logfile};
       delete $self->{lfp};
+      delete $self->{lfp_printed};
     }
   if ($self->{configdir})
     {
@@ -547,11 +559,17 @@ sub unpack
 
   $destdir = $1 if $destdir =~ m{^(.*)$};	# brute force untaint
 
+  unless (-e $archive)
+    {
+      push @{$self->{error}}, "unpack('$archive'): no such file or directory";
+      return 1;
+    }
+
   if (($self->{recursion_level}||0) > 1000)
     {
       push @{$self->{error}}, "unpack('$archive','$destdir'): recursion limit 1000";
       ## this is only an emergency stop.
-      return;
+      return 1;
     }
 
   if ($archive !~ m{^/} or $archive !~ m{^\Q$self-{destdir}\E/})
@@ -638,6 +656,7 @@ sub unpack
 		    {
 		      print STDERR "unpack copy in: $destdir_in_file already exists, " if $self->{verbose};
 		      $destdir = File::Temp::tempdir("_XXXX", DIR => $destdir);
+		      $destdir_in_file = $1 if "$destdir/$in_file" =~ m{^(.*)$}; # brute force untaint
 		      print STDERR "using $destdir_in_file instead.\n" if $self->{verbose};
 		    }
 		  $data->{error} = "copy($archive): $!" unless File::Copy::copy($archive, $destdir_in_file);
@@ -747,10 +766,11 @@ sub unpack
           close $self->{lfp} or carp "logfile write ($self->{logfile}) failed: $!\n";
 	}
       delete $self->{lfp};
+      delete $self->{lfp_printed};
     }
 
   # FIXME: should return nonzero if we had any unrecoverable errors.
-  return 0;
+  return $self->{error} ? 1 : 0;
 }
 
 =head2 run
@@ -1459,13 +1479,24 @@ sub mime
 
       close $fd unless $in{fd};
     }
-  $in{file} = '-' unless defined $in{file};
 
 
   open my $fd, '<', \$in{buf};	# for use with File::MimeInfo::Magic
 
   ## flm can say 'cannot open \'IP\' (No such file or directory)'
+  ## flm can say 'CDF V2 Document, corrupt: Can\'t read SAT'	(application/vnd.ms-excel)
   my $mime1 = $flm->checktype_contents($in{buf});
+  if ($mime1 =~ m{, corrupt: })
+    {
+      print STDERR "mime: readahead buffer $UNCOMP_BUFSZ too short\n" if $self->{verbose} > 1;
+      if (defined $in{file})
+        {
+          print STDERR "mime: reopening $in{file}\n" if $self->{verbose} > 1;
+          $mime1 = $flm->checktype_filename($in{file});
+	}
+    }
+  $in{file} = '-' unless defined $in{file};
+    
   return [ 'x-system/x-error', undef, $mime1 ] if $mime1 =~ m{^cannot open};
 
   # in SLES11 we get 'text/plain charset=utf-8' without semicolon.
@@ -1513,6 +1544,8 @@ sub mime
     {
       # hmm, are we sure? No, if the description contradicts:
       # 
+      $r[0] = "text/x-uuencode" if $r[2] eq 'uuencoded or xxencoded text';
+
       # bin/floor
       # ['text/x-pascal; charset=us-ascii','a /usr/bin/tclsh script text']
       # 'text/plain'

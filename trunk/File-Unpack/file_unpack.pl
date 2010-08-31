@@ -7,6 +7,7 @@
 #
 # 2010-06-29, jw -- initial draught
 # 2010-08-03, jw -- fixed -v.
+# 2010-08-31, jw -- fixed -q with -m.
 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case);
@@ -95,7 +96,7 @@ Valid options are:
 
 if ($mime_only)
   {
-    my $u = File::Unpack->new(logfile => '/dev/null');
+    my $u = File::Unpack->new(%opt, logfile => '/dev/null');
     my $m = $u->mime($archive);
     $u->mime_handler_dir(@mime_handler_dirs);
     my ($h,$r) = $u->find_mime_handler($m);
@@ -111,6 +112,7 @@ $u->exclude(vcs => $exclude_vcs);
 $u->exclude(add => \@exclude) if @exclude;
 $u->mime_handler_dir(@mime_handler_dirs);
 $u->unpack($archive);
+print Dumper $u->{error} if $u->{error};
 
 #delete $u->{json};
 #die "$0: " . Dumper $u;
