@@ -17,7 +17,7 @@
 #     LICENSE => q[perl]
 #     NAME => q[File::Unpack]
 #     PL_FILES => {  }
-#     PREREQ_PM => { File::LibMagic=>q[0], FindBin=>q[0], IPC::Run=>q[0], Pod::Usage=>q[0], Test::Pod=>q[1.22], Text::Sprintf::Named=>q[0], File::Path=>q[0], Filesys::Statvfs=>q[0], Pod::Coverage=>q[0.18], Getopt::Long=>q[0], File::Copy=>q[0], Test::Pod::Coverage=>q[1.08], File::MimeInfo::Magic=>q[0], BSD::Resource=>q[0], Compress::Raw::Zlib=>q[2.024], Carp=>q[0], String::ShellQuote=>q[0], Test::More=>q[0], Compress::Raw::Bzip2=>q[0], File::Temp=>q[0], Compress::Raw::Lzma=>q[0], JSON=>q[0], Test::CheckManifest=>q[0.9], Cwd=>q[0] }
+#     PREREQ_PM => { File::LibMagic=>q[0], FindBin=>q[0], IPC::Run=>q[0], Pod::Usage=>q[0], Test::Pod=>q[1.22], Text::Sprintf::Named=>q[0], File::Compare=>q[0], File::Path=>q[0], Filesys::Statvfs=>q[0], Pod::Coverage=>q[0.18], Getopt::Long=>q[0], File::Copy=>q[0], Test::Pod::Coverage=>q[1.08], File::MimeInfo::Magic=>q[0], BSD::Resource=>q[0], Compress::Raw::Zlib=>q[2.024], Carp=>q[0], String::ShellQuote=>q[0], Test::More=>q[0], Compress::Raw::Bzip2=>q[0], File::Temp=>q[0], Compress::Raw::Lzma=>q[0], JSON=>q[0], Test::CheckManifest=>q[0.9], Cwd=>q[0] }
 #     VERSION_FROM => q[Unpack.pm]
 #     clean => { FILES=>q[File-Unpack-*] }
 #     dist => { COMPRESS=>q[bzip2 -9f], SUFFIX=>q[bz2] }
@@ -59,11 +59,11 @@ DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
 NAME = File::Unpack
 NAME_SYM = File_Unpack
-VERSION = 0.22
+VERSION = 0.23
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_22
+VERSION_SYM = 0_23
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.22
+XS_VERSION = 0.23
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -263,7 +263,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = File-Unpack
-DISTVNAME = File-Unpack-0.22
+DISTVNAME = File-Unpack-0.23
 
 
 # --- MakeMaker macro section:
@@ -484,7 +484,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) Generating META.yml
 	$(NOECHO) $(ECHO) '--- #YAML:1.0' > META_new.yml
 	$(NOECHO) $(ECHO) 'name:               File-Unpack' >> META_new.yml
-	$(NOECHO) $(ECHO) 'version:            0.22' >> META_new.yml
+	$(NOECHO) $(ECHO) 'version:            0.23' >> META_new.yml
 	$(NOECHO) $(ECHO) 'abstract:           An aggressive archive file unpacker, based on mime-types' >> META_new.yml
 	$(NOECHO) $(ECHO) 'author:' >> META_new.yml
 	$(NOECHO) $(ECHO) '    - Juergen Weigert <jnw@cpan.org>' >> META_new.yml
@@ -506,6 +506,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '    Compress::Raw::Lzma:  0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    Compress::Raw::Zlib:  2.024' >> META_new.yml
 	$(NOECHO) $(ECHO) '    Cwd:                  0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    File::Compare:        0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    File::Copy:           0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    File::LibMagic:       0' >> META_new.yml
 	$(NOECHO) $(ECHO) '    File::MimeInfo::Magic:  0' >> META_new.yml
@@ -816,7 +817,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd :
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0.22">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0.23">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT>An aggressive archive file unpacker, based on mime-types</ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Juergen Weigert &lt;jnw@cpan.org&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
@@ -826,6 +827,7 @@ ppd :
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Compress::Raw::Lzma" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Compress::Raw::Zlib" VERSION="2.024" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Cwd::" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Compare" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Copy" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::LibMagic" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::MimeInfo::Magic" />' >> $(DISTNAME).ppd

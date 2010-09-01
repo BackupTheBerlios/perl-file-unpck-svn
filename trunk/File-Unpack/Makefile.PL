@@ -35,6 +35,7 @@ WriteMakefile(
 	'File::Path' => 0,
 	'File::Temp' => 0,
 	'File::Copy' => 0,
+	'File::Compare' => 0,
 	'JSON' => 0,
 	'String::ShellQuote' => 0,
 	'IPC::Run' => 0, 

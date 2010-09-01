@@ -58,6 +58,7 @@ BEGIN
   eval "use File::LibMagic;";
 }
 use Data::Dumper;
+die Dumper $ENV{PERL5LIB}, \@INC;
 
 my $fu = eval "File::Unpack->new(logfile => '/dev/null', verbose => 0);";
 my $flm = File::LibMagic->new() unless defined $fu;
@@ -94,6 +95,8 @@ while (defined(my $line = <IN>))
       {
         my $new_off = tell IN;
 	seek IN, $offset, 0;
+	die "$0: use File::Unpack failed. Fallback to File::LibMagic not impl." unless $fu;
+
 	if (my $m = $fu->mime(fd => \*IN))
 	  {
 print "$lnr: $m->[0], ascii_count=$ascii_count\n";
@@ -118,7 +121,7 @@ print "$lnr: $m->[0], ascii_count=$ascii_count\n";
     if ($is_ascii)
       {
         # print "$lnr: ascii_count=$ascii_count\n";
-        my $redirect = $1 if $line =~ m{\b>\s*(.*)};
+        my $redirect = $1 if $line =~ m{>\s*(.*)};
 	if (defined $redirect)
 	  {
 	    if ($redirect =~ s{^'}{}s)
@@ -132,20 +135,23 @@ print "$lnr: $m->[0], ascii_count=$ascii_count\n";
 	    $redirect =~ s{.*/}{}s;		# toss any directories
 	    $redirect =~ s{[\\'\s]+}{_}gs;	# toss any fancy chars
 	  }
+	# print "$lnr: redirect='$redirect': $line" if $line =~ m{SHAR_EOF};
 
-        if ($line =~ m{^begin [0-7]{3} (.*)})
+        if ($line =~ m{^begin [0-7]{3} (.*)}s)
 	  {
 	    $redirect = $1;
 	    $redirect =~ s{.*/}{}s;
 	    $redirect =~ s{\s*$}{}s;
 	    $redirect =~ s{[\s\\']+}{_}gs;
-	    print OUT $line . "###################### see $redirect\n";
+	    print OUT $line . "###################### see $redirect.uu\n";
 
 	    # pump to file, until 'end'
-	    open O, ">", $redirect;
+	    open O, ">", "$redirect.uu";
+	    print O "begin 644 $redirect\n";
 	    my $linelength;
 	    my $component_offset = tell IN;
-	    while (defined(my $uu = <IN>))
+	    my $uu;
+	    while (defined($uu = <IN>))
 	      {
 	        $linelength = length($uu) unless defined $linelength;
 	        print O $uu;
@@ -153,23 +159,32 @@ print "$lnr: $m->[0], ascii_count=$ascii_count\n";
 		last if length($uu) != $linelength;
 	        $component_offset = tell IN;
 	      }
-	    close O or die "$0: failed to write $redirect: $!\n";
+	    unless (($uu||'') =~ m{^end\s+$}s)	# usually a single '`' missing.
+	      {
+	        $uu = <IN>;
+		print O $uu;
+	      }
+	    # put the end there, if still missing.
+	    print O "end\n" unless (($uu||'') =~ m{^end\s+$}s);	
+	    close O or die "$0: failed to write $redirect.uu: $!\n";
 	    seek IN, $component_offset, 0;
 	    $components_found++;
 	  }
-	elsif ($line =~ m{^begin-base64 [0-7]{3} (.*)})
+	elsif ($line =~ m{^begin-base64 [0-7]{3} (.*)}s)
 	  {
 	    $redirect = $1;
 	    $redirect =~ s{.*/}{}s;
 	    $redirect =~ s{\s*$}{}s;
 	    $redirect =~ s{[\s\\']+}{_}gs;
-	    print OUT $line . "###################### see $redirect\n====\n";
+	    print OUT $line . "###################### see $redirect.b64\n====\n";
 	    # pump to file, until '===='
 	
-	    open O, ">", $redirect;
+	    open O, ">", "$redirect.b64";
+	    print O "begin-base64 644 $redirect\n";
 	    my $linelength;
 	    my $component_offset = tell IN;
-	    while (defined(my $uu = <IN>))
+	    my $uu;
+	    while (defined($uu = <IN>))
 	      {
 	        $linelength = length($uu) unless defined $linelength;
 	        print O $uu;
@@ -177,22 +192,27 @@ print "$lnr: $m->[0], ascii_count=$ascii_count\n";
 		last if length($uu) != $linelength;
 	        $component_offset = tell IN;
 	      }
-	    close O or die "$0: failed to write $redirect: $!\n";
+	    print O "====\n" unless (($uu||'') =~ m{^====\s+$}s);
+	    close O or die "$0: failed to write $redirect.b64: $!\n";
 	    seek IN, $component_offset, 0;
 	    $components_found++;
 	  }
-	elsif (defined($redirect) and $line =~ m{^\s*sed 's/^X//'\s*<<\s*'SHAR_EOF'\s*>})
+	elsif (defined($redirect) and $line =~ m{^\s*sed 's/\^X//'\s*<<\s*'SHAR_EOF'\s*>}s)
 	  {
+	    # ${echo} 'x - extracting ''zypper'' (text)'
+	    #   sed 's/^X//' << 'SHAR_EOF' > 'zypper' &&
+	    # X                       jw, Thu Aug 12 20:41:31 CEST 2010
+            ####################################################################
 	    # pump to file, until 'SHAR_EOF'
 	    $redirect = "_$lnr.here" unless defined $redirect;
-	    print OUT $line . "###################### see $redirect\nSHAR_EOF\n";
+	    print OUT $line . "###################### see $redirect\n";
 	    open O, ">", $redirect;
 	    my $component_offset = tell IN;
 	    while (defined(my $shar = <IN>))
 	      {
 	        $shar =~ s{^X}{}s;
-	        print O $shar;
 		last if $shar =~ m{^SHAR_EOF\s+$}s;
+	        print O $shar;
 	        $component_offset = tell IN;
 	      }
 	    close O or die "$0: failed to write $redirect: $!\n";
@@ -204,14 +224,14 @@ print "$lnr: $m->[0], ascii_count=$ascii_count\n";
 	    my $end_here = $1;
 	    $end_here =~ s{^'(.*)'$}{$1};
 	    $redirect = "_$lnr.here" unless defined $redirect;
-	    print OUT $line . "###################### see $redirect\n$end_here\n";
+	    print OUT $line . "###################### see $redirect\n";
 	    # pump to file, until '$end_here'
 	    open O, ">", $redirect;
 	    my $component_offset = tell IN;
 	    while (defined(my $here = <IN>))
 	      {
-	        print O $here;
 		last if $here =~ m{^\Q$end_here\E\s+$}s;
+	        print O $here;
 	        $component_offset = tell IN;
 	      }
 	    close O or die "$0: failed to write $redirect: $!\n";
