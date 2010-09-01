@@ -1731,7 +1731,7 @@ sub mime
 	  no strict 'subs';	# Compress::Raw::Lzma::AloneDecoder, LZMA_OK, LZMA_STREAM_END
 
 	  my $saved_input = $in{buf};
-          my ($lz, $stat) = eval { new Compress::Raw::Lzma::AloneDecoder -Bufsize => $UNCOMP_BUFSZ, -LimitOutput => 1; };
+          my ($lz, $stat) = eval { Compress::Raw::Lzma::AloneDecoder->new(-Bufsize => $UNCOMP_BUFSZ, -LimitOutput => 1); };
 	  if ($lz)
 	    {
 	      $stat = $lz->code($in{buf}, $uncomp_buf);
