@@ -474,9 +474,11 @@ external program (or shell-script) found in a directory registered with
 C<mime_handler_dir>.
 
 A mime-handler is called with 6 parameters:
-source_path, destdir, destfile, mimetype, description, and config_dir. 
+source_path, destfile, destination_path, mimetype, description, and config_dir. 
 Note, that destination_path is a freshly created empty working directory, even
-if the unpacker is expected to unpack only a single file. 
+if the unpacker is expected to unpack only a single file. The unpacker is
+called after chdir into destination_path, so you usually do not need to
+evaluate the third parameter.
 
 The config_dir contains unpack configuration in .sh, .js and possibly 
 other formats. A mime-handler should use this information, but need not.  
@@ -685,8 +687,8 @@ sub unpack
 	      #     $self->logf($archive => { unpacking => $h->{fmt_p} });
 	      #   }
 	        
-	      my $unpacked = $self->_run_mime_handler($h, $archive, $destdir, 
-	      				$new_name, $m->[0], $m->[2], $self->{configdir});
+	      my $unpacked = $self->_run_mime_handler($h, $archive, $new_name, $destdir, 
+	      				$m->[0], $m->[2], $self->{configdir});
 
 	      if (ref $unpacked)
 	        {
@@ -919,7 +921,7 @@ sub _run_mime_handler
 {
   my ($self, $h, @argv) = @_;
   my $src     = $argv[0];
-  my $destdir = $argv[1];
+  my $destdir = $argv[2];
   my $dot_dot_safeguard = $self->{dot_dot_safeguard}||0;
   $dot_dot_safeguard = 2 if $dot_dot_safeguard < 2;
 
@@ -931,8 +933,8 @@ sub _run_mime_handler
   my $args = 
     {
       src	=> $argv[0],	# abs_path()
+      destfile	=> $argv[1],	# filename() - a suggested name, simply based on src, in case the unpacker needs it.
       destdir	=> $jail,	# abs_path() - for now...
-      destfile	=> $argv[2],	# filename() - a suggested name, simply based on src, in case the unpacker needs it.
       mime	=> $argv[3],
       descr	=> $argv[4],	# mime_descr
       configdir	=> $argv[5]	# abs_path()
@@ -1140,13 +1142,13 @@ A wildcard before the '=' sign lowers precedence more than one after it.
 The mapping takes place when C<mime_handler_dir> is called, later additions are 
 not recognized. C<mime_handler> does not do any implicit expansions. Call it
 multiple times with the same handler command and different names if needed.
-The default argument list is "%(src)s %(destdir)s %(destfile)s %(mime)s %(descr)s %(configdir)s" --
+The default argument list is "%(src)s %(destfile)s %(destdir)s %(mime)s %(descr)s %(configdir)s" --
 this is applied, if no args are given and no redirections are given. See also C<unpack> for more semantics and how a handler should behave.
 
 Both methods return an ARRAY-ref of all currently known mime handlers.
 
 =cut 
-my @def_mime_handler_fmt = qw(%(src)s %(destdir)s %(destfile)s %(mime)s %(descr)s %(configdir)s);
+my @def_mime_handler_fmt = qw(%(src)s %(destfile)s %(destdir)s %(mime)s %(descr)s %(configdir)s);
 
 sub _subst_args
 {
@@ -1436,6 +1438,14 @@ does, making a very simple and efficient mime-handler).
 C<mime> returns a 3 or 4 element arrayref with mimetype, charset, description, diff;
 where diff is only present when both methods disagree.
 
+In case of 'text/plain', an additional rule based on file name suffix is used to allow
+recognizing well known plain text pack formats. 
+We return 'text/x-suffix-XX+plain', where XX is one of the recognized suffixes
+(in all lower case and without the dot).  E.g. a plain mmencoded file has no
+header and looks like 'plain/text' to all the known magic libraries. We
+recognize the suffixes .mm, .b64, and .base64 for this (case insignificant).
+A similar rule exitst for 'application/octect-stream'. It may trigger if lzma recognition fails.
+
 Examples:
  
  [ 'text/x-perl', 'us-ascii', 'a /usr/bin/perl -w script text']
@@ -1480,8 +1490,6 @@ sub mime
       close $fd unless $in{fd};
     }
 
-
-  open my $fd, '<', \$in{buf};	# for use with File::MimeInfo::Magic
 
   ## flm can say 'cannot open \'IP\' (No such file or directory)'
   ## flm can say 'CDF V2 Document, corrupt: Can\'t read SAT'	(application/vnd.ms-excel)
@@ -1624,8 +1632,10 @@ sub mime
 	}
     }
 
-  ## bzip2 is nice for stacked mime checking. It needs a huge input buffer that we do not normally provide.
-  ## We only support it at the top of a stack, where we acquire enough additional input until bzip2 is happy.
+  ## bzip2 is not nice for stacked mime checking. 
+  ## It needs a huge input buffer that we do not normally provide.
+  ## We only support it at the top of a stack, where we acquire enough additional 
+  ## input until bzip2 is happy.
   if ($r[0] =~ m{^application/(x-)?bzip2$} && !$in{recursion})
     {
       my $limitOutput = 1;
@@ -1687,6 +1697,18 @@ sub mime
 	}
     }
   $r[0] .= '+zip' if $r[0] =~ m{^application/vnd\.oasis\.opendocument\.text$};
+
+  if ($r[0] eq 'text/plain' and $in{file} =~ m{\.(mm|b64|base64)$}i)
+    {
+      my $suf = lc $1;
+      $r[0] = "text/x-suffix-$suf+plain";
+    }
+
+  if ($r[0] eq 'application/octet-stream' and $in{file} =~ m{\.(lzma|zx|lz)$}i)
+    {
+      my $suf = lc $1;
+      $r[0] = "application/x-suffix-$suf+octet-stream";
+    }
 
   ${$in{uncomp}} = $uncomp_buf if ref $in{uncomp} eq 'SCALAR';
   $r[3] = [ $mime1, $mime2 ] if $mime1 ne $r[0] or ($mime2 and $mime2 ne $mime1);

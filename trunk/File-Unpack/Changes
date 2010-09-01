@@ -6,6 +6,12 @@ Revision history for File-Unpack
 	Added '# Requires: ....' comments with the builtin handlers to document 
 	the non-perlish dependencies. 
 	Fixed recognition of .xls -- File::LibMagic said corrupt, with only a short buffer.
+	Swapped 2nd and 3rd parameter of _run_mime_handler(): mime helpers have now their
+	suggested destname as second parameter.
+	mime(): added suffix rules for 'text/plain' and 'application/octet-stream', 
+	to harvest even the least trusted source of information, in the absence
+	of anything else.
+	Implemented first draft of helper/text/=x-shellscript: tested embedded gzip.
 
 0.22	jw, Sun Aug 29 23:27:59 CEST 2010
 	Fixed descending of destdir into subdirs of subdirs
