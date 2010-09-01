@@ -12,6 +12,9 @@ Revision history for File-Unpack
 	to harvest even the least trusted source of information, in the absence
 	of anything else.
 	Implemented first draft of helper/text/=x-shellscript: tested embedded gzip.
+	Added -L option to file_unpack.pl; 
+	_run_mime_handler() now untaints its argv. run() errors are now propagated.
+	t/04-subdir.t now does a real-life unzip test, if unzip is available.
 
 0.22	jw, Sun Aug 29 23:27:59 CEST 2010
 	Fixed descending of destdir into subdirs of subdirs
