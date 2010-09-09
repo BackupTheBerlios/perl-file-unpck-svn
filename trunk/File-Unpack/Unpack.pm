@@ -115,6 +115,9 @@ my @builtin_mime_handlers = (
   # Requires: sharutils
   [ 'text=uuencode',        qr{uu},                [qw(/usr/bin/uudecode -o %(destfile)s %(src)s)] ],
 
+  # Requires: upx
+  [ 'application=upx',	   qr{(?:upx\.exe|upx)},   [qw(/usr/bin/upx -q -q -q -d -o%(destfile)s %(src)s) ] ],
+
   # xml.summary.Mono.Security.Authenticode is twice inside of monodoc-1.0.4.tar.gz/Mono.zip/ -> use -o
   [ 'application=zip',        qr{(?:zip|jar|sar)}, [qw(/usr/bin/unzip -P no_pw -q -o %(src)s)] ],
 
@@ -1845,6 +1848,14 @@ sub mime
     {
       my $suf = lc $1;
       $r[0] = "application/x-suffix-$suf+octet-stream";
+    }
+
+  if ($r[0] =~ m{^application/x-(ms-dos-|)executable$})
+    {
+      if (-x '/usr/bin/upx')
+        {
+	  $r[0] .= '+upx' unless run(['/usr/bin/upx', '-q', '-q', '-t', $in{file}]);
+	}
     }
 
   ${$in{uncomp}} = $uncomp_buf if ref $in{uncomp} eq 'SCALAR';
