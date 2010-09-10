@@ -1,14 +1,13 @@
 # This Makefile is for the File::Unpack extension to perl.
 #
 # It was generated automatically by MakeMaker version
-# 6.56 (Revision: 65600) from the contents of
+# 6.42 (Revision: 41145) from the contents of
 # Makefile.PL. Don't edit this file, edit Makefile.PL instead.
 #
 #       ANY CHANGES MADE HERE WILL BE LOST!
 #
 #   MakeMaker ARGV: ()
 #
-
 #   MakeMaker Parameters:
 
 #     ABSTRACT_FROM => q[Unpack.pm]
@@ -17,7 +16,7 @@
 #     LICENSE => q[perl]
 #     NAME => q[File::Unpack]
 #     PL_FILES => {  }
-#     PREREQ_PM => { File::LibMagic=>q[0], FindBin=>q[0], IPC::Run=>q[0], Pod::Usage=>q[0], Test::Pod=>q[1.22], Text::Sprintf::Named=>q[0], File::Compare=>q[0], File::Path=>q[0], Filesys::Statvfs=>q[0], Pod::Coverage=>q[0.18], Getopt::Long=>q[0], File::Copy=>q[0], Test::Pod::Coverage=>q[1.08], File::MimeInfo::Magic=>q[0], BSD::Resource=>q[0], Compress::Raw::Zlib=>q[2.024], Carp=>q[0], String::ShellQuote=>q[0], Test::More=>q[0], Compress::Raw::Bzip2=>q[0], File::Temp=>q[0], Compress::Raw::Lzma=>q[0], JSON=>q[0], Test::CheckManifest=>q[0.9], Cwd=>q[0] }
+#     PREREQ_PM => { File::LibMagic=>q[0], Pod::Usage=>q[0], IPC::Run=>q[0], Text::Sprintf::Named=>q[0], File::Compare=>q[0], File::Path=>q[0], Filesys::Statvfs=>q[0], Getopt::Long=>q[0], File::Copy=>q[0], File::MimeInfo::Magic=>q[0], BSD::Resource=>q[0], Compress::Raw::Zlib=>q[2.024], Carp=>q[0], String::ShellQuote=>q[0], Compress::Raw::Bzip2=>q[0], File::Temp=>q[0], Compress::Raw::Lzma=>q[0], JSON=>q[0], Cwd=>q[0] }
 #     VERSION_FROM => q[Unpack.pm]
 #     clean => { FILES=>q[File-Unpack-*] }
 #     dist => { COMPRESS=>q[bzip2 -9f], SUFFIX=>q[bz2] }
@@ -27,30 +26,31 @@
 
 # --- MakeMaker const_config section:
 
-# These definitions are from config.sh (via /usr/lib/perl5/5.12.1/i586-linux-thread-multi/Config.pm).
-# They may have been overridden via Makefile.PL or on the command line.
+# These definitions are from config.sh (via /usr/lib/perl5/5.10.0/x86_64-linux-thread-multi/Config.pm)
+
+# They may have been overridden via Makefile.PL or on the command line
 AR = ar
 CC = cc
 CCCDLFLAGS = -fPIC
-CCDLFLAGS = -Wl,-E -Wl,-rpath,/usr/lib/perl5/5.12.1/i586-linux-thread-multi/CORE
+CCDLFLAGS = -Wl,-E -Wl,-rpath,/usr/lib/perl5/5.10.0/x86_64-linux-thread-multi/CORE
 DLEXT = so
 DLSRC = dl_dlopen.xs
 EXE_EXT = 
 FULL_AR = /usr/bin/ar
 LD = cc
-LDDLFLAGS = -shared -fomit-frame-pointer -fmessage-length=0 -O2 -Wall -D_FORTIFY_SOURCE=2 -fstack-protector -funwind-tables -fasynchronous-unwind-tables -g -Wall -pipe
-LDFLAGS =  -fstack-protector
-LIBC = /lib/libc-2.11.2.so
+LDDLFLAGS = -shared -L/usr/local/lib64
+LDFLAGS =  -L/usr/local/lib64
+LIBC = /lib64/libc-2.10.1.so
 LIB_EXT = .a
 OBJ_EXT = .o
 OSNAME = linux
-OSVERS = 2.6.32
+OSVERS = 2.6.31
 RANLIB = :
-SITELIBEXP = /usr/lib/perl5/site_perl/5.12.1
-SITEARCHEXP = /usr/lib/perl5/site_perl/5.12.1/i586-linux-thread-multi
+SITELIBEXP = /usr/lib/perl5/site_perl/5.10.0
+SITEARCHEXP = /usr/lib/perl5/site_perl/5.10.0/x86_64-linux-thread-multi
 SO = so
-VENDORARCHEXP = /usr/lib/perl5/vendor_perl/5.12.1/i586-linux-thread-multi
-VENDORLIBEXP = /usr/lib/perl5/vendor_perl/5.12.1
+VENDORARCHEXP = /usr/lib/perl5/vendor_perl/5.10.0/x86_64-linux-thread-multi
+VENDORLIBEXP = /usr/lib/perl5/vendor_perl/5.10.0
 
 
 # --- MakeMaker constants section:
@@ -80,17 +80,17 @@ PREFIX = $(SITEPREFIX)
 PERLPREFIX = /usr
 SITEPREFIX = /usr
 VENDORPREFIX = /usr
-INSTALLPRIVLIB = /usr/lib/perl5/5.12.1
+INSTALLPRIVLIB = /usr/lib/perl5/5.10.0
 DESTINSTALLPRIVLIB = $(DESTDIR)$(INSTALLPRIVLIB)
-INSTALLSITELIB = /usr/lib/perl5/site_perl/5.12.1
+INSTALLSITELIB = /usr/lib/perl5/site_perl/5.10.0
 DESTINSTALLSITELIB = $(DESTDIR)$(INSTALLSITELIB)
-INSTALLVENDORLIB = /usr/lib/perl5/vendor_perl/5.12.1
+INSTALLVENDORLIB = /usr/lib/perl5/vendor_perl/5.10.0
 DESTINSTALLVENDORLIB = $(DESTDIR)$(INSTALLVENDORLIB)
-INSTALLARCHLIB = /usr/lib/perl5/5.12.1/i586-linux-thread-multi
+INSTALLARCHLIB = /usr/lib/perl5/5.10.0/x86_64-linux-thread-multi
 DESTINSTALLARCHLIB = $(DESTDIR)$(INSTALLARCHLIB)
-INSTALLSITEARCH = /usr/lib/perl5/site_perl/5.12.1/i586-linux-thread-multi
+INSTALLSITEARCH = /usr/lib/perl5/site_perl/5.10.0/x86_64-linux-thread-multi
 DESTINSTALLSITEARCH = $(DESTDIR)$(INSTALLSITEARCH)
-INSTALLVENDORARCH = /usr/lib/perl5/vendor_perl/5.12.1/i586-linux-thread-multi
+INSTALLVENDORARCH = /usr/lib/perl5/vendor_perl/5.10.0/x86_64-linux-thread-multi
 DESTINSTALLVENDORARCH = $(DESTDIR)$(INSTALLVENDORARCH)
 INSTALLBIN = /usr/bin
 DESTINSTALLBIN = $(DESTDIR)$(INSTALLBIN)
@@ -116,14 +116,14 @@ INSTALLSITEMAN3DIR = /usr/share/man/man3
 DESTINSTALLSITEMAN3DIR = $(DESTDIR)$(INSTALLSITEMAN3DIR)
 INSTALLVENDORMAN3DIR = /usr/share/man/man3
 DESTINSTALLVENDORMAN3DIR = $(DESTDIR)$(INSTALLVENDORMAN3DIR)
-PERL_LIB = /usr/lib/perl5/5.12.1
-PERL_ARCHLIB = /usr/lib/perl5/5.12.1/i586-linux-thread-multi
+PERL_LIB = /usr/lib/perl5/5.10.0
+PERL_ARCHLIB = /usr/lib/perl5/5.10.0/x86_64-linux-thread-multi
 LIBPERL_A = libperl.a
 FIRST_MAKEFILE = Makefile
 MAKEFILE_OLD = Makefile.old
 MAKE_APERL_FILE = Makefile.aperl
 PERLMAINCC = $(CC)
-PERL_INC = /usr/lib/perl5/5.12.1/i586-linux-thread-multi/CORE
+PERL_INC = /usr/lib/perl5/5.10.0/x86_64-linux-thread-multi/CORE
 PERL = /usr/bin/perl
 FULLPERL = /usr/bin/perl
 ABSPERL = $(PERL)
@@ -134,13 +134,12 @@ PERLRUNINST = $(PERLRUN) "-I$(INST_ARCHLIB)" "-I$(INST_LIB)"
 FULLPERLRUNINST = $(FULLPERLRUN) "-I$(INST_ARCHLIB)" "-I$(INST_LIB)"
 ABSPERLRUNINST = $(ABSPERLRUN) "-I$(INST_ARCHLIB)" "-I$(INST_LIB)"
 PERL_CORE = 0
-PERM_DIR = 755
 PERM_RW = 644
 PERM_RWX = 755
 
-MAKEMAKER   = /usr/lib/perl5/5.12.1/ExtUtils/MakeMaker.pm
-MM_VERSION  = 6.56
-MM_REVISION = 65600
+MAKEMAKER   = /usr/lib/perl5/5.10.0/ExtUtils/MakeMaker.pm
+MM_VERSION  = 6.42
+MM_REVISION = 41145
 
 # FULLEXT = Pathname for extension directory (eg Foo/Bar/Oracle).
 # BASEEXT = Basename part of FULLEXT. May be just equal FULLEXT. (eg Oracle)
@@ -186,10 +185,13 @@ PERL_ARCHIVE_AFTER =
 
 
 TO_INST_PM = Unpack.pm \
+	bz.pl \
 	children_fuser.pl \
 	file_unpack.pl
 
-PM_TO_BLIB = file_unpack.pl \
+PM_TO_BLIB = bz.pl \
+	$(INST_LIB)/File/bz.pl \
+	file_unpack.pl \
 	$(INST_LIB)/File/file_unpack.pl \
 	Unpack.pm \
 	$(INST_LIB)/File/Unpack.pm \
@@ -198,7 +200,7 @@ PM_TO_BLIB = file_unpack.pl \
 
 
 # --- MakeMaker platform_constants section:
-MM_Unix_VERSION = 6.56
+MM_Unix_VERSION = 6.42
 PERL_MALLOC_DEF = -DPERL_EXTMALLOC_DEF -Dmalloc=Perl_malloc -Dfree=Perl_mfree -Drealloc=Perl_realloc -Dcalloc=Perl_calloc
 
 
@@ -216,7 +218,7 @@ SHELL = /bin/sh
 CHMOD = chmod
 CP = cp
 MV = mv
-NOOP = $(TRUE)
+NOOP = $(SHELL) -c true
 NOECHO = @
 RM_F = rm -f
 RM_RF = rm -rf
@@ -224,22 +226,20 @@ TEST_F = test -f
 TOUCH = touch
 UMASK_NULL = umask 0
 DEV_NULL = > /dev/null 2>&1
-MKPATH = $(ABSPERLRUN) -MExtUtils::Command -e 'mkpath' --
-EQUALIZE_TIMESTAMP = $(ABSPERLRUN) -MExtUtils::Command -e 'eqtime' --
-FALSE = false
-TRUE = true
+MKPATH = $(ABSPERLRUN) "-MExtUtils::Command" -e mkpath
+EQUALIZE_TIMESTAMP = $(ABSPERLRUN) "-MExtUtils::Command" -e eqtime
 ECHO = echo
 ECHO_N = echo -n
 UNINST = 0
 VERBINST = 0
-MOD_INSTALL = $(ABSPERLRUN) -MExtUtils::Install -e 'install([ from_to => {@ARGV}, verbose => '\''$(VERBINST)'\'', uninstall_shadows => '\''$(UNINST)'\'', dir_mode => '\''$(PERM_DIR)'\'' ]);' --
-DOC_INSTALL = $(ABSPERLRUN) -MExtUtils::Command::MM -e 'perllocal_install' --
-UNINSTALL = $(ABSPERLRUN) -MExtUtils::Command::MM -e 'uninstall' --
-WARN_IF_OLD_PACKLIST = $(ABSPERLRUN) -MExtUtils::Command::MM -e 'warn_if_old_packlist' --
+MOD_INSTALL = $(ABSPERLRUN) -MExtUtils::Install -e 'install({@ARGV}, '\''$(VERBINST)'\'', 0, '\''$(UNINST)'\'');' --
+DOC_INSTALL = $(ABSPERLRUN) "-MExtUtils::Command::MM" -e perllocal_install
+UNINSTALL = $(ABSPERLRUN) "-MExtUtils::Command::MM" -e uninstall
+WARN_IF_OLD_PACKLIST = $(ABSPERLRUN) "-MExtUtils::Command::MM" -e warn_if_old_packlist
 MACROSTART = 
 MACROEND = 
 USEMAKEFILE = -f
-FIXIN = $(ABSPERLRUN) -MExtUtils::MY -e 'MY->fixin(shift)' --
+FIXIN = $(PERLRUN) "-MExtUtils::MY" -e "MY->fixin(shift)"
 
 
 # --- MakeMaker makemakerdflt section:
@@ -335,42 +335,42 @@ blibdirs.ts : blibdirs
 
 $(INST_LIBDIR)$(DFSEP).exists :: Makefile.PL
 	$(NOECHO) $(MKPATH) $(INST_LIBDIR)
-	$(NOECHO) $(CHMOD) $(PERM_DIR) $(INST_LIBDIR)
+	$(NOECHO) $(CHMOD) 755 $(INST_LIBDIR)
 	$(NOECHO) $(TOUCH) $(INST_LIBDIR)$(DFSEP).exists
 
 $(INST_ARCHLIB)$(DFSEP).exists :: Makefile.PL
 	$(NOECHO) $(MKPATH) $(INST_ARCHLIB)
-	$(NOECHO) $(CHMOD) $(PERM_DIR) $(INST_ARCHLIB)
+	$(NOECHO) $(CHMOD) 755 $(INST_ARCHLIB)
 	$(NOECHO) $(TOUCH) $(INST_ARCHLIB)$(DFSEP).exists
 
 $(INST_AUTODIR)$(DFSEP).exists :: Makefile.PL
 	$(NOECHO) $(MKPATH) $(INST_AUTODIR)
-	$(NOECHO) $(CHMOD) $(PERM_DIR) $(INST_AUTODIR)
+	$(NOECHO) $(CHMOD) 755 $(INST_AUTODIR)
 	$(NOECHO) $(TOUCH) $(INST_AUTODIR)$(DFSEP).exists
 
 $(INST_ARCHAUTODIR)$(DFSEP).exists :: Makefile.PL
 	$(NOECHO) $(MKPATH) $(INST_ARCHAUTODIR)
-	$(NOECHO) $(CHMOD) $(PERM_DIR) $(INST_ARCHAUTODIR)
+	$(NOECHO) $(CHMOD) 755 $(INST_ARCHAUTODIR)
 	$(NOECHO) $(TOUCH) $(INST_ARCHAUTODIR)$(DFSEP).exists
 
 $(INST_BIN)$(DFSEP).exists :: Makefile.PL
 	$(NOECHO) $(MKPATH) $(INST_BIN)
-	$(NOECHO) $(CHMOD) $(PERM_DIR) $(INST_BIN)
+	$(NOECHO) $(CHMOD) 755 $(INST_BIN)
 	$(NOECHO) $(TOUCH) $(INST_BIN)$(DFSEP).exists
 
 $(INST_SCRIPT)$(DFSEP).exists :: Makefile.PL
 	$(NOECHO) $(MKPATH) $(INST_SCRIPT)
-	$(NOECHO) $(CHMOD) $(PERM_DIR) $(INST_SCRIPT)
+	$(NOECHO) $(CHMOD) 755 $(INST_SCRIPT)
 	$(NOECHO) $(TOUCH) $(INST_SCRIPT)$(DFSEP).exists
 
 $(INST_MAN1DIR)$(DFSEP).exists :: Makefile.PL
 	$(NOECHO) $(MKPATH) $(INST_MAN1DIR)
-	$(NOECHO) $(CHMOD) $(PERM_DIR) $(INST_MAN1DIR)
+	$(NOECHO) $(CHMOD) 755 $(INST_MAN1DIR)
 	$(NOECHO) $(TOUCH) $(INST_MAN1DIR)$(DFSEP).exists
 
 $(INST_MAN3DIR)$(DFSEP).exists :: Makefile.PL
 	$(NOECHO) $(MKPATH) $(INST_MAN3DIR)
-	$(NOECHO) $(CHMOD) $(PERM_DIR) $(INST_MAN3DIR)
+	$(NOECHO) $(CHMOD) 755 $(INST_MAN3DIR)
 	$(NOECHO) $(TOUCH) $(INST_MAN3DIR)$(DFSEP).exists
 
 
@@ -483,50 +483,37 @@ realclean purge ::  clean realclean_subdirs
 metafile : create_distdir
 	$(NOECHO) $(ECHO) Generating META.yml
 	$(NOECHO) $(ECHO) '--- #YAML:1.0' > META_new.yml
-	$(NOECHO) $(ECHO) 'name:               File-Unpack' >> META_new.yml
-	$(NOECHO) $(ECHO) 'version:            0.25' >> META_new.yml
-	$(NOECHO) $(ECHO) 'abstract:           An aggressive archive file unpacker, based on mime-types' >> META_new.yml
-	$(NOECHO) $(ECHO) 'author:' >> META_new.yml
+	$(NOECHO) $(ECHO) 'name:                File-Unpack' >> META_new.yml
+	$(NOECHO) $(ECHO) 'version:             0.25' >> META_new.yml
+	$(NOECHO) $(ECHO) 'abstract:            An aggressive archive file unpacker, based on mime-types' >> META_new.yml
+	$(NOECHO) $(ECHO) 'license:             perl' >> META_new.yml
+	$(NOECHO) $(ECHO) 'author:              ' >> META_new.yml
 	$(NOECHO) $(ECHO) '    - Juergen Weigert <jnw@cpan.org>' >> META_new.yml
-	$(NOECHO) $(ECHO) 'license:            perl' >> META_new.yml
-	$(NOECHO) $(ECHO) 'distribution_type:  module' >> META_new.yml
-	$(NOECHO) $(ECHO) 'configure_requires:' >> META_new.yml
-	$(NOECHO) $(ECHO) '    ExtUtils::MakeMaker:  0' >> META_new.yml
-	$(NOECHO) $(ECHO) 'build_requires:' >> META_new.yml
-	$(NOECHO) $(ECHO) '    FindBin:              0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Pod::Coverage:        0.18' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Test::CheckManifest:  0.9' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Test::More:           0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Test::Pod:            1.22' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Test::Pod::Coverage:  1.08' >> META_new.yml
-	$(NOECHO) $(ECHO) 'requires:' >> META_new.yml
-	$(NOECHO) $(ECHO) '    BSD::Resource:        0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Carp:                 0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Compress::Raw::Bzip2:  0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Compress::Raw::Lzma:  0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Compress::Raw::Zlib:  2.024' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Cwd:                  0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    File::Compare:        0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    File::Copy:           0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    File::LibMagic:       0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    File::MimeInfo::Magic:  0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    File::Path:           0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    File::Temp:           0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Filesys::Statvfs:     0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Getopt::Long:         0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    IPC::Run:             0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    JSON:                 0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Pod::Usage:           0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    String::ShellQuote:   0' >> META_new.yml
-	$(NOECHO) $(ECHO) '    Text::Sprintf::Named:  0' >> META_new.yml
-	$(NOECHO) $(ECHO) 'no_index:' >> META_new.yml
-	$(NOECHO) $(ECHO) '    directory:' >> META_new.yml
-	$(NOECHO) $(ECHO) '        - t' >> META_new.yml
-	$(NOECHO) $(ECHO) '        - inc' >> META_new.yml
-	$(NOECHO) $(ECHO) 'generated_by:       ExtUtils::MakeMaker version 6.56' >> META_new.yml
+	$(NOECHO) $(ECHO) 'generated_by:        ExtUtils::MakeMaker version 6.42' >> META_new.yml
+	$(NOECHO) $(ECHO) 'distribution_type:   module' >> META_new.yml
+	$(NOECHO) $(ECHO) 'requires:     ' >> META_new.yml
+	$(NOECHO) $(ECHO) '    BSD::Resource:                 0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Carp:                          0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Compress::Raw::Bzip2:          0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Compress::Raw::Lzma:           0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Compress::Raw::Zlib:           2.024' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Cwd:                           0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    File::Compare:                 0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    File::Copy:                    0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    File::LibMagic:                0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    File::MimeInfo::Magic:         0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    File::Path:                    0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    File::Temp:                    0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Filesys::Statvfs:              0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Getopt::Long:                  0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    IPC::Run:                      0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    JSON:                          0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Pod::Usage:                    0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    String::ShellQuote:            0' >> META_new.yml
+	$(NOECHO) $(ECHO) '    Text::Sprintf::Named:          0' >> META_new.yml
 	$(NOECHO) $(ECHO) 'meta-spec:' >> META_new.yml
-	$(NOECHO) $(ECHO) '    url:      http://module-build.sourceforge.net/META-spec-v1.4.html' >> META_new.yml
-	$(NOECHO) $(ECHO) '    version:  1.4' >> META_new.yml
+	$(NOECHO) $(ECHO) '    url:     http://module-build.sourceforge.net/META-spec-v1.3.html' >> META_new.yml
+	$(NOECHO) $(ECHO) '    version: 1.3' >> META_new.yml
 	-$(NOECHO) $(MV) META_new.yml $(DISTVNAME)/META.yml
 
 
@@ -635,16 +622,16 @@ distsignature : create_distdir
 
 # --- MakeMaker install section:
 
-install :: pure_install doc_install
+install :: all pure_install doc_install
 	$(NOECHO) $(NOOP)
 
-install_perl :: pure_perl_install doc_perl_install
+install_perl :: all pure_perl_install doc_perl_install
 	$(NOECHO) $(NOOP)
 
-install_site :: pure_site_install doc_site_install
+install_site :: all pure_site_install doc_site_install
 	$(NOECHO) $(NOOP)
 
-install_vendor :: pure_vendor_install doc_vendor_install
+install_vendor :: all pure_vendor_install doc_vendor_install
 	$(NOECHO) $(NOOP)
 
 pure_install :: pure_$(INSTALLDIRS)_install
@@ -659,7 +646,7 @@ pure__install : pure_site_install
 doc__install : doc_site_install
 	$(NOECHO) $(ECHO) INSTALLDIRS not defined, defaulting to INSTALLDIRS=site
 
-pure_perl_install :: all
+pure_perl_install ::
 	$(NOECHO) $(MOD_INSTALL) \
 		read $(PERL_ARCHLIB)/auto/$(FULLEXT)/.packlist \
 		write $(DESTINSTALLARCHLIB)/auto/$(FULLEXT)/.packlist \
@@ -673,7 +660,7 @@ pure_perl_install :: all
 		$(SITEARCHEXP)/auto/$(FULLEXT)
 
 
-pure_site_install :: all
+pure_site_install ::
 	$(NOECHO) $(MOD_INSTALL) \
 		read $(SITEARCHEXP)/auto/$(FULLEXT)/.packlist \
 		write $(DESTINSTALLSITEARCH)/auto/$(FULLEXT)/.packlist \
@@ -686,7 +673,7 @@ pure_site_install :: all
 	$(NOECHO) $(WARN_IF_OLD_PACKLIST) \
 		$(PERL_ARCHLIB)/auto/$(FULLEXT)
 
-pure_vendor_install :: all
+pure_vendor_install ::
 	$(NOECHO) $(MOD_INSTALL) \
 		read $(VENDORARCHEXP)/auto/$(FULLEXT)/.packlist \
 		write $(DESTINSTALLVENDORARCH)/auto/$(FULLEXT)/.packlist \
@@ -697,7 +684,7 @@ pure_vendor_install :: all
 		$(INST_MAN1DIR) $(DESTINSTALLVENDORMAN1DIR) \
 		$(INST_MAN3DIR) $(DESTINSTALLVENDORMAN3DIR)
 
-doc_perl_install :: all
+doc_perl_install ::
 	$(NOECHO) $(ECHO) Appending installation info to $(DESTINSTALLARCHLIB)/perllocal.pod
 	-$(NOECHO) $(MKPATH) $(DESTINSTALLARCHLIB)
 	-$(NOECHO) $(DOC_INSTALL) \
@@ -708,7 +695,7 @@ doc_perl_install :: all
 		EXE_FILES "$(EXE_FILES)" \
 		>> $(DESTINSTALLARCHLIB)/perllocal.pod
 
-doc_site_install :: all
+doc_site_install ::
 	$(NOECHO) $(ECHO) Appending installation info to $(DESTINSTALLARCHLIB)/perllocal.pod
 	-$(NOECHO) $(MKPATH) $(DESTINSTALLARCHLIB)
 	-$(NOECHO) $(DOC_INSTALL) \
@@ -719,7 +706,7 @@ doc_site_install :: all
 		EXE_FILES "$(EXE_FILES)" \
 		>> $(DESTINSTALLARCHLIB)/perllocal.pod
 
-doc_vendor_install :: all
+doc_vendor_install ::
 	$(NOECHO) $(ECHO) Appending installation info to $(DESTINSTALLARCHLIB)/perllocal.pod
 	-$(NOECHO) $(MKPATH) $(DESTINSTALLARCHLIB)
 	-$(NOECHO) $(DOC_INSTALL) \
@@ -765,7 +752,7 @@ $(FIRST_MAKEFILE) : Makefile.PL $(CONFIGDEP)
 	$(PERLRUN) Makefile.PL 
 	$(NOECHO) $(ECHO) "==> Your Makefile has been rebuilt. <=="
 	$(NOECHO) $(ECHO) "==> Please rerun the $(MAKE) command.  <=="
-	$(FALSE)
+	false
 
 
 
@@ -817,30 +804,32 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd :
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0.25">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,25,0,0">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '    <TITLE>$(DISTNAME)</TITLE>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT>An aggressive archive file unpacker, based on mime-types</ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Juergen Weigert &lt;jnw@cpan.org&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="BSD::Resource" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Carp::" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Compress::Raw::Bzip2" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Compress::Raw::Lzma" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Compress::Raw::Zlib" VERSION="2.024" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Cwd::" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Compare" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Copy" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::LibMagic" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::MimeInfo::Magic" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Path" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Temp" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Filesys::Statvfs" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Getopt::Long" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="IPC::Run" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="JSON::" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Pod::Usage" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="String::ShellQuote" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Text::Sprintf::Named" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="i586-linux-thread-multi-5.12" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="BSD-Resource" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Carp" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Compress-Raw-Bzip2" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Compress-Raw-Lzma" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Compress-Raw-Zlib" VERSION="2,024,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Cwd" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="File-Compare" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="File-Copy" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="File-LibMagic" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="File-MimeInfo-Magic" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="File-Path" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="File-Temp" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Filesys-Statvfs" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Getopt-Long" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="IPC-Run" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="JSON" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Pod-Usage" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="String-ShellQuote" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Text-Sprintf-Named" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <OS NAME="$(OSNAME)" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="x86_64-linux-thread-multi-5.1" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    </IMPLEMENTATION>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '</SOFTPKG>' >> $(DISTNAME).ppd
@@ -848,8 +837,9 @@ ppd :
 
 # --- MakeMaker pm_to_blib section:
 
-pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
-	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', q[$(PM_FILTER)], '\''$(PERM_DIR)'\'')' -- \
+pm_to_blib : $(TO_INST_PM)
+	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', '\''$(PM_FILTER)'\'')' -- \
+	  bz.pl $(INST_LIB)/File/bz.pl \
 	  file_unpack.pl $(INST_LIB)/File/file_unpack.pl \
 	  Unpack.pm $(INST_LIB)/File/Unpack.pm \
 	  children_fuser.pl $(INST_LIB)/File/children_fuser.pl 

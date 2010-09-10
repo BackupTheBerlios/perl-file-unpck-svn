@@ -76,11 +76,11 @@ File::Unpack - An aggressive archive file unpacker, based on mime-types
 
 =head1 VERSION
 
-Version 0.25
+Version 0.26
 
 =cut
 
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 
 $ENV{PATH} = '/usr/bin:/bin';
 $ENV{SHELL} = '/bin/sh';
@@ -1669,10 +1669,16 @@ sub mime
 	  $r[0] = "text/$1" if $mime2 =~ m{/(\S+)};
 	}
     }
-  elsif ($mime1 eq 'text/plain' and $r[2] =~ m{(?:PostScript|font)}i)
+  elsif (($mime1 eq 'text/plain' and $r[2] =~ m{(?:PostScript|font)}i)
+	or ($mime1 eq 'application/postscript'))
     {
-      # IPA.pfa
-      # ['text/plain; charset=us-ascii','PostScript Type 1 font text (OmegaSerifIPA 001.000)']
+      # 11.3 says:
+      #  IPA.pfa
+      #  ['text/plain; charset=us-ascii','PostScript Type 1 font text (OmegaSerifIPA 001.000)']
+      # sles11 says:
+      #  IPA.pfa
+      #  ['application/postscript', undef, 'PostScript document text']
+      #
       # mime2 = 'application/x-font-type1'
       # $mime2 = eval { File::MimeInfo::Magic::mimetype($in{file}); };
       $mime2 ||= eval { open my $fd,'<',\$in{buf}; File::MimeInfo::Magic::magic($fd); };
