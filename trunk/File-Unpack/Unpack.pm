@@ -1631,15 +1631,18 @@ sub mime
   ## flm can say 'cannot open \'IP\' (No such file or directory)'
   ## flm can say 'CDF V2 Document, corrupt: Can\'t read SAT'	(application/vnd.ms-excel)
   my $mime1 = $flm->checktype_contents($in{buf});
-  if ($mime1 =~ m{, corrupt: })
+  if ($mime1 =~ m{, corrupt: } or $mime1 =~ m{^application/octet-stream\b})
     {
-      print STDERR "mime: readahead buffer $UNCOMP_BUFSZ too short\n" if $self->{verbose} > 1;
+      # application/x-iso9660-image is reported as application/octet-stream if the buffer is short.
+      # iso images usually start with 0x8000 bytes of all '\0'.
+      print STDERR "mime: readahead buffer $UNCOMP_BUFSZ too short\n" if $self->{verbose} > 2;
       if (defined $in{file})
         {
           print STDERR "mime: reopening $in{file}\n" if $self->{verbose} > 1;
           $mime1 = $flm->checktype_filename($in{file});
 	}
     }
+  print STDERR "flm->checktype_contents: $mime1\n" if $self->{verbose} > 1;
   $in{file} = '-' unless defined $in{file};
     
   return [ 'x-system/x-error', undef, $mime1 ] if $mime1 =~ m{^cannot open};
@@ -1789,7 +1792,7 @@ sub mime
       if ($bz)
         {
 	  ## this only works if this is a first level call.
-	  open IN, "<", $in{file};
+	  open IN, "<", $in{file} unless $in{file} eq '-';
 	  seek IN, length($in{buf}), 0;
 	  while (!length $uncomp_buf)
 	    {
