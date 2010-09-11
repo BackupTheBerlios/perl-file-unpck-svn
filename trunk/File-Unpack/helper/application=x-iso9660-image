@@ -3,7 +3,7 @@
 # test script to run the iso unpacker.
 # 2008-09-17, jw
 
-my $isoinfo = 'isoinfo';	# requires: genisoimage
+my $isoinfo = 'isoinfo';	# Requires: genisoimage
 my $verbose = 0;
 
 my $from = shift;
