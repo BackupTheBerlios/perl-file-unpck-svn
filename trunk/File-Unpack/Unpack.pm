@@ -221,8 +221,8 @@ Most of the currently known archive file formats are supported.
 Examines the contents of an archive file or directory by extensive mime-type
 analysis. The contents is unpacked recursively to the given destination
 directory; a listing of the unpacked files is reported through the built in
-logging facility during unpacking. The mime-type handlers are customizable, as
-well as exclude patterns.
+logging facility during unpacking. Most common archive file formats are handled 
+directly; more can easily be added as mime-type helper plugins.
 
 =head1 SUBROUTINES/METHODS
 
