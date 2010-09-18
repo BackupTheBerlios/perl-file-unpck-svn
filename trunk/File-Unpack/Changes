@@ -5,6 +5,7 @@ Revision history for File-Unpack
 	not only if flm reports, currupt, but also when it reports
 	a/octet-stream. this helps to recognize a/x-iso9660-image
 	Added .iso by including my old unpack_iso.pl as a helper.
+	Added .lha
 
 0.26	jw, Thu Sep  9 19:26:21 CEST 2010
 	Added .upx; we are testing all application/*-executable for upx to get the mime type.

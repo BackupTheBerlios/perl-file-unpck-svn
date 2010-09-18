@@ -123,6 +123,8 @@ my @builtin_mime_handlers = (
 
   # Requires: unrar
   [ 'application=rar',	      qr{rar},             [qw(/usr/bin/unrar x -o- -p- -inul -kb -y %(src)s)] ],
+  # Requires: lha
+  [ 'application=x-lha',      qr{lha},             [qw(/usr/bin/lha x -q %(src)s)] ],
 
   # Requires: binutils
   [ 'application=archive',    qr{(?:a|ar|deb)},    [qw(/usr/bin/ar x %(src)s)] ],
