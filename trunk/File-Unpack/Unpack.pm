@@ -72,15 +72,15 @@ use Data::Dumper;
 
 =head1 NAME
 
-File::Unpack - An aggressive archive file unpacker, based on mime-types
+File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... archive unpacker, based on mime-types
 
 =head1 VERSION
 
-Version 0.26
+Version 0.27
 
 =cut
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 
 $ENV{PATH} = '/usr/bin:/bin';
 $ENV{SHELL} = '/bin/sh';
