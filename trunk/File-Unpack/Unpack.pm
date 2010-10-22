@@ -80,7 +80,7 @@ Version 0.27
 
 =cut
 
-our $VERSION = '0.27';
+our $VERSION = '0.28';
 
 $ENV{PATH} = '/usr/bin:/bin';
 $ENV{SHELL} = '/bin/sh';
@@ -709,7 +709,7 @@ sub unpack
 	  push @{$self->{error}}, "unpack dir ($archive) failed: $!";
 	}
     }
-  else
+  elsif (-f $archive)
     {
       if ($self->_not_excluded($subdir, $in_file) and
           !defined($self->{done}{$archive}))
@@ -838,6 +838,10 @@ sub unpack
 		}
 	    }
 	}
+    }
+  else
+    {
+      $self->logf($archive => { "skipped" => "special file"});
     }
 
   if (--$self->{recursion_level} == 0)

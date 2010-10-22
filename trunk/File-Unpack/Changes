@@ -1,5 +1,9 @@
 Revision history for File-Unpack
 
+0.28	jw, Fri Oct 22 14:29:09 CEST 2010
+	Look only at files and dirs, ignore special files.
+	Reading a pipe could block us endlessly.
+
 0.27	jw, Sat Sep 11 22:01:49 CEST 2010
 	new feature in mime(): attempt full file access
 	not only if flm reports currupt, but also when it reports
