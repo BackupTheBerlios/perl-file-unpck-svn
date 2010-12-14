@@ -22,7 +22,7 @@ metamail -w -x < saved-mail-body-from-mutt
 # metamail: Incomplete multipart message -- unexpected EOF
 # Cannot handle any part of multipart/alternative message
 
-# when I extract the barts between the boundary string and feed this
+# when I extract the parts between the boundary string and feed this
 # to metamail one by one, it works well.
 env METAMAIL_TMPDIR=. metamail -d -w jpeg.mm
  This message contains 'image/jpeg`-format data.

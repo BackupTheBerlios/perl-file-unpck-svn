@@ -190,6 +190,12 @@ sub _locate_cpio_i
 
 =head1 SYNOPSIS
 
+This perl module comes with an executable script:
+
+/usr/bin/file_unpack -h
+/usr/bin/file_unpack [-1] [-m] ARCHIVE...
+
+
 File::Unpack is an aggressive unpacker for archive files. We call it aggressive, 
 because it can recursivly descend into any freshly unpacked file, if it appears to be an 
 archive itself.
