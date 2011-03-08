@@ -1,5 +1,5 @@
 #
-# (C) 2010, jnw@cpan.org, all rights reserved.
+# (C) 2010-2011, jnw@cpan.org, all rights reserved.
 # Distribute under the same license as Perl itself.
 #
 #
@@ -2097,7 +2097,7 @@ for tcsh too.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Juergen Weigert.
+Copyright 2010,2011 Juergen Weigert.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
