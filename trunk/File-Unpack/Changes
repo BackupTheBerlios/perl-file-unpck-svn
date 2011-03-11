@@ -1,5 +1,9 @@
 Revision history for File-Unpack
 
+0.33	jw, Fri Mar 11 18:04:09 CET 2011
+	run() untaint argv0. needed for running helpers under -T
+	Empty file is text/x-empty now. not application/x-empty.
+
 0.32	jw, Thu Mar 10 01:52:53 CET 2011
 	Fixed setlimit code, to be more robust.
 	Fixed logfile JSON syntax, with a dummy Element in the epilog.

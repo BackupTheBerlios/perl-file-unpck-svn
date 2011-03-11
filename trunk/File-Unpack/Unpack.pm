@@ -77,11 +77,11 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.32
+Version 0.33
 
 =cut
 
-our $VERSION = '0.32';
+our $VERSION = '0.33';
 
 $ENV{PATH} = '/usr/bin:/bin';
 $ENV{SHELL} = '/bin/sh';
@@ -986,6 +986,7 @@ sub run
      $t = IPC::Run::timer($opt->{every}-0.6) if $opt->{every};
   push @run, $t if $t;
 
+  $run[0][0] = $1 if $run[0][0] =~ m{^(.*)$}s;
   my $h = eval { IPC::Run::start @run; };
   return wantarray ? (undef, $@) : undef unless $h;
 
@@ -1717,7 +1718,7 @@ sub mime
       my $len = read $fd, $in{buf}, $UNCOMP_BUFSZ;
       return [ 'x-system/x-error', undef, "read '$f' failed: $!" ] unless defined $len;
       return [ 'x-system/x-error', undef, "read '$f' failed: $len: $!" ] if $len < 0;
-      return [ 'application/x-empty', undef, 'empty' ] if $len == 0;
+      return [ 'text/x-empty', undef, 'empty' ] if $len == 0;
       seek $fd, $pos, 0;
 
       close $fd unless $in{fd};
