@@ -26,29 +26,29 @@
 
 # --- MakeMaker const_config section:
 
-# These definitions are from config.sh (via /usr/lib/perl5/5.12.1/i586-linux-thread-multi/Config.pm).
+# These definitions are from config.sh (via /usr/lib/perl5/5.12.1/x86_64-linux-thread-multi/Config.pm).
 # They may have been overridden via Makefile.PL or on the command line.
 AR = ar
 CC = cc
 CCCDLFLAGS = -fPIC
-CCDLFLAGS = -Wl,-E -Wl,-rpath,/usr/lib/perl5/5.12.1/i586-linux-thread-multi/CORE
+CCDLFLAGS = -Wl,-E -Wl,-rpath,/usr/lib/perl5/5.12.1/x86_64-linux-thread-multi/CORE
 DLEXT = so
 DLSRC = dl_dlopen.xs
 EXE_EXT = 
 FULL_AR = /usr/bin/ar
 LD = cc
-LDDLFLAGS = -shared -fomit-frame-pointer -fmessage-length=0 -O2 -Wall -D_FORTIFY_SOURCE=2 -fstack-protector -funwind-tables -fasynchronous-unwind-tables -g -Wall -pipe
-LDFLAGS =  -fstack-protector
-LIBC = /lib/libc-2.11.2.so
+LDDLFLAGS = -shared -L/usr/local/lib64 -fstack-protector
+LDFLAGS =  -L/usr/local/lib64 -fstack-protector
+LIBC = /lib64/libc-2.11.2.so
 LIB_EXT = .a
 OBJ_EXT = .o
 OSNAME = linux
 OSVERS = 2.6.32
 RANLIB = :
 SITELIBEXP = /usr/lib/perl5/site_perl/5.12.1
-SITEARCHEXP = /usr/lib/perl5/site_perl/5.12.1/i586-linux-thread-multi
+SITEARCHEXP = /usr/lib/perl5/site_perl/5.12.1/x86_64-linux-thread-multi
 SO = so
-VENDORARCHEXP = /usr/lib/perl5/vendor_perl/5.12.1/i586-linux-thread-multi
+VENDORARCHEXP = /usr/lib/perl5/vendor_perl/5.12.1/x86_64-linux-thread-multi
 VENDORLIBEXP = /usr/lib/perl5/vendor_perl/5.12.1
 
 
@@ -58,11 +58,11 @@ DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
 NAME = File::Unpack
 NAME_SYM = File_Unpack
-VERSION = 0.33
+VERSION = 0.35
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_33
+VERSION_SYM = 0_35
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.33
+XS_VERSION = 0.35
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -85,11 +85,11 @@ INSTALLSITELIB = /usr/lib/perl5/site_perl/5.12.1
 DESTINSTALLSITELIB = $(DESTDIR)$(INSTALLSITELIB)
 INSTALLVENDORLIB = /usr/lib/perl5/vendor_perl/5.12.1
 DESTINSTALLVENDORLIB = $(DESTDIR)$(INSTALLVENDORLIB)
-INSTALLARCHLIB = /usr/lib/perl5/5.12.1/i586-linux-thread-multi
+INSTALLARCHLIB = /usr/lib/perl5/5.12.1/x86_64-linux-thread-multi
 DESTINSTALLARCHLIB = $(DESTDIR)$(INSTALLARCHLIB)
-INSTALLSITEARCH = /usr/lib/perl5/site_perl/5.12.1/i586-linux-thread-multi
+INSTALLSITEARCH = /usr/lib/perl5/site_perl/5.12.1/x86_64-linux-thread-multi
 DESTINSTALLSITEARCH = $(DESTDIR)$(INSTALLSITEARCH)
-INSTALLVENDORARCH = /usr/lib/perl5/vendor_perl/5.12.1/i586-linux-thread-multi
+INSTALLVENDORARCH = /usr/lib/perl5/vendor_perl/5.12.1/x86_64-linux-thread-multi
 DESTINSTALLVENDORARCH = $(DESTDIR)$(INSTALLVENDORARCH)
 INSTALLBIN = /usr/bin
 DESTINSTALLBIN = $(DESTDIR)$(INSTALLBIN)
@@ -116,13 +116,13 @@ DESTINSTALLSITEMAN3DIR = $(DESTDIR)$(INSTALLSITEMAN3DIR)
 INSTALLVENDORMAN3DIR = /usr/share/man/man3
 DESTINSTALLVENDORMAN3DIR = $(DESTDIR)$(INSTALLVENDORMAN3DIR)
 PERL_LIB = /usr/lib/perl5/5.12.1
-PERL_ARCHLIB = /usr/lib/perl5/5.12.1/i586-linux-thread-multi
+PERL_ARCHLIB = /usr/lib/perl5/5.12.1/x86_64-linux-thread-multi
 LIBPERL_A = libperl.a
 FIRST_MAKEFILE = Makefile
 MAKEFILE_OLD = Makefile.old
 MAKE_APERL_FILE = Makefile.aperl
 PERLMAINCC = $(CC)
-PERL_INC = /usr/lib/perl5/5.12.1/i586-linux-thread-multi/CORE
+PERL_INC = /usr/lib/perl5/5.12.1/x86_64-linux-thread-multi/CORE
 PERL = /usr/bin/perl
 FULLPERL = /usr/bin/perl
 ABSPERL = $(PERL)
@@ -185,10 +185,13 @@ PERL_ARCHIVE_AFTER =
 
 
 TO_INST_PM = Unpack.pm \
+	bz.pl \
 	children_fuser.pl \
 	file_unpack.pl
 
-PM_TO_BLIB = file_unpack.pl \
+PM_TO_BLIB = bz.pl \
+	$(INST_LIB)/File/bz.pl \
+	file_unpack.pl \
 	$(INST_LIB)/File/file_unpack.pl \
 	Unpack.pm \
 	$(INST_LIB)/File/Unpack.pm \
@@ -262,7 +265,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = File-Unpack
-DISTVNAME = File-Unpack-0.33
+DISTVNAME = File-Unpack-0.35
 
 
 # --- MakeMaker macro section:
@@ -483,7 +486,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) Generating META.yml
 	$(NOECHO) $(ECHO) '--- #YAML:1.0' > META_new.yml
 	$(NOECHO) $(ECHO) 'name:               File-Unpack' >> META_new.yml
-	$(NOECHO) $(ECHO) 'version:            0.33' >> META_new.yml
+	$(NOECHO) $(ECHO) 'version:            0.35' >> META_new.yml
 	$(NOECHO) $(ECHO) 'abstract:           An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... archive unpacker, based on mime-types' >> META_new.yml
 	$(NOECHO) $(ECHO) 'author:' >> META_new.yml
 	$(NOECHO) $(ECHO) '    - Juergen Weigert <jnw@cpan.org>' >> META_new.yml
@@ -816,7 +819,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd :
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0.33">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0.35">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT>An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... archive unpacker, based on mime-types</ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Juergen Weigert &lt;jnw@cpan.org&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
@@ -839,7 +842,7 @@ ppd :
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Pod::Usage" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="String::ShellQuote" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Text::Sprintf::Named" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="i586-linux-thread-multi-5.12" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="x86_64-linux-thread-multi-5.12" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    </IMPLEMENTATION>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '</SOFTPKG>' >> $(DISTNAME).ppd
@@ -849,6 +852,7 @@ ppd :
 
 pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
 	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', q[$(PM_FILTER)], '\''$(PERM_DIR)'\'')' -- \
+	  bz.pl $(INST_LIB)/File/bz.pl \
 	  file_unpack.pl $(INST_LIB)/File/file_unpack.pl \
 	  Unpack.pm $(INST_LIB)/File/Unpack.pm \
 	  children_fuser.pl $(INST_LIB)/File/children_fuser.pl 

@@ -78,11 +78,11 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.35
+Version 0.36
 
 =cut
 
-our $VERSION = '0.35';
+our $VERSION = '0.36';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -696,6 +696,7 @@ sub unpack
       $archive = Cwd::fast_abs_path($archive) if -e $archive;
     }
 
+  my $start_time = time;
   if ($self->{recursion_level}++ == 0)
     {
       $self->{json} ||= JSON->new()->ascii(1);
@@ -887,7 +888,7 @@ sub unpack
 
   if (--$self->{recursion_level} == 0)
     {
-      my $epilog = {end => scalar localtime};
+      my $epilog = {end => scalar localtime, sec => time-$start_time };
       $epilog->{missing_unpacker} = \@missing_unpacker if @missing_unpacker;
       my $s = $self->{json}->encode($epilog);
       # a dummy entry at the end, to compensate for the trailing comma
@@ -1137,8 +1138,14 @@ sub _run_mime_handler
   $_[1]{tick}++; 
   if (-x $lsof)
     {
-      printf "T: %s SIZE=%d tick_tick %d\n", $_[1]{watch}, -s $_[1]{watch}, $_[1]{tick}; 
-      system("$lsof -o '$_[1]{watch}'") 
+      my $out;
+      my $name = $_[1]{watch};
+      $name =~ s{^.*/}{};
+      $self->run([$lsof, '-w', '-o', '-Fpco0', $_[1]{watch}], {out_err => \$out});
+      $out =~ s{\0\n}{\0}sg;
+      $out =~ s{\0(\w)}{  $1  }g;
+      # my %out = split($out, /\0/);
+      printf "T: %s SIZE=%d lsof=%s\n", $name, -s $_[1]{watch}, $out; 
     }
   else
     {
@@ -1637,6 +1644,35 @@ sub _bytes_unit
   return $1*1024*1024*1024      if $text =~ m{([\d\.]+)g}i;
   return $1*1024*1024*1024*1024 if $text =~ m{([\d\.]+)t}i;
   return $text;
+}
+
+sub _unit_bytes
+{
+  my ($number) = @_;
+  my $div = 1;
+  my $unit = '';
+  my $neg = '';
+  if ($number < 0)
+    {
+      $neg = '-'; $number = -$number;
+    }
+  if ($number > $div * 1024)
+    {
+      $div *= 1024; $unit = 'k'; 
+      if ($number > $div * 1024)
+        {
+	  $div *= 1024; $unit = 'm'; 
+	  if ($number > $div * 1024)
+	    {
+	      $div *= 1024; $unit = 'g'; 
+	      if ($number > $div * 1024)
+	        {
+		  $div *= 1024; $unit = 't'; 
+		}
+	    }
+	}
+    }
+  return sprintf "%s%.2f%s", $neg, ($number / $div), $unit;
 }
 
 # see fs.pm/check_fs_health()
