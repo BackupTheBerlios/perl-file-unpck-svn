@@ -37,7 +37,7 @@
 #      # th_en_US.dat is an 11MB thesaurus in OOo
 #      skip if $from =~ m{(/(ustar|pax)\-big\-\d+g\.tar\.bz2|/th_en_US\.dat|/testtar\.tar|\.html\.(ru|ja|ko\.euc-kr|fr|es|cz))$}
 #
-# * use LWP::Simple::getstore() if $archive =~ m{^\S+://}
+# * use LWP::Simple::getstore() if $archive =~ m{^\w+://}
 # * application/x-debian-package is a 'application/x-archive' -> (ar xv /dev/stdin) < $qufrom";
 # * application/x-iso9660	-> "isoinfo -d -i %(src)s"
 # * PDF improvement: okular says: 'this document contains embedded files.' How can we grab those?
@@ -61,7 +61,7 @@ BEGIN
 
 use Carp;
 use File::Path;
-use File::Temp;			# tempdir() in _run_mime_handler.
+use File::Temp ();		# tempdir() in _run_mime_handler.
 use File::Copy ();
 use File::Compare ();
 use JSON;
@@ -70,6 +70,7 @@ use IPC::Run;			# implements File::Unpack::run()
 use Text::Sprintf::Named;	# used to parse @builtin_mime_handlers
 use Cwd 'getcwd';		# run(), moves us there and back. 
 use Data::Dumper;
+use POSIX ();
 
 =head1 NAME
 
@@ -77,15 +78,22 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.33
+Version 0.35
 
 =cut
 
-our $VERSION = '0.33';
+our $VERSION = '0.35';
 
+POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
 $ENV{SHELL} = '/bin/sh';
 delete $ENV{ENV};
+
+# what we name the temporary directories, while helpers are working.
+my $TMPDIR_TEMPL = '_fu_XXXXX';
+
+# used by the tick-tick ticker to show where we are.
+my $lsof = '/usr/bin/lsof';
 
 # Compress::Raw::Bunzip2 needs several 100k of input data, we special case this.
 # File::LibMagic wants to read ca. 70k of input data, before it says application/vnd.ms-excel
@@ -141,6 +149,7 @@ my @builtin_mime_handlers = (
   [ 'application=tar',       qr{(?:tar|gem)},      [\&_locate_tar,  qw(-xf %(src)s)] ],
   [ 'application=tar+bzip2', qr{tar\.bz2},         [\&_locate_tar, qw(-jxf %(src)s)] ],
   [ 'application=tar+gzip',  qr{t(?:ar\.gz|gz)},   [\&_locate_tar, qw(-zxf %(src)s)] ],
+#  [ 'application=tar+gzip',  qr{t(?:ar\.gz|gz)},      [qw(/home/testy/src/C/slowcat)], qw(< %(src)s |), [\&_locate_tar, qw(-zxf -)] ],
   [ 'application=tar+lzma',  qr{tar\.(?:xz|lzma|lz)}, [qw(/usr/bin/lzcat)], qw(< %(src)s |), [\&_locate_tar, qw(-xf -)] ],
   [ 'application=tar+lzma',  qr{tar\.(?:xz|lzma|lz)}, [qw(/usr/bin/xz -dc -f %(src)s)], '|', [\&_locate_tar, qw(-xf -)] ],
   [ 'application=rpm',       qr{(?:src\.r|s|r)pm}, [qw(/usr/bin/rpm2cpio %(src)s)], '|', [\&_locate_cpio_i] ],
@@ -765,7 +774,7 @@ sub unpack
 		  if (-e "$destdir_in_file")
 		    {
 		      print STDERR "unpack copy in: $destdir_in_file already exists, " if $self->{verbose};
-		      $destdir = File::Temp::tempdir("_XXXX", DIR => $destdir);
+		      $destdir = File::Temp::tempdir($TMPDIR_TEMPL, DIR => $destdir);
 		      $destdir_in_file = $1 if "$destdir/$in_file" =~ m{^(.*)$}s; # brute force untaint
 		      print STDERR "using $destdir_in_file instead.\n" if $self->{verbose};
 		    }
@@ -1075,7 +1084,7 @@ sub _run_mime_handler
   $dot_dot_safeguard = 2 if $dot_dot_safeguard < 2;
 
   mkpath($destdir);
-  my $jail_base = File::Temp::tempdir("_XXXX", DIR => $destdir);
+  my $jail_base = File::Temp::tempdir($TMPDIR_TEMPL, DIR => $destdir);
   my $jail = $jail_base . ("/_" x $dot_dot_safeguard);
   mkpath($jail);
 
@@ -1123,7 +1132,19 @@ sub _run_mime_handler
     { 
       debug => ($self->{verbose} > 2) ? $self->{verbose} - 2 : 0, 
       watch => $args->{src}, every => 5, fu_obj => $self, mime_handler => $h, 
-      prog => sub { $_[1]{tick}++; print "T: tick_tick $_[1]{tick}\n"; },
+      prog => sub 
+{
+  $_[1]{tick}++; 
+  if (-x $lsof)
+    {
+      printf "T: %s SIZE=%d tick_tick %d\n", $_[1]{watch}, -s $_[1]{watch}, $_[1]{tick}; 
+      system("$lsof -o '$_[1]{watch}'") 
+    }
+  else
+    {
+      print "T: $_[1]{watch} tick_tick $_[1]{tick}\n"; 
+    }
+},
     });
     
   chmod 0700, $jail_base if $self->{jail_chmod0};
@@ -1139,7 +1160,7 @@ sub _run_mime_handler
 
   # loop through all _: if it only contains one item , replace it with this item,
   # be it a file or dir. This uses $jail_tmp, an unused pathname.
-  my $jail_tmp = File::Temp::tempdir("_XXXX", DIR => $destdir);
+  my $jail_tmp = File::Temp::tempdir($TMPDIR_TEMPL, DIR => $destdir);
   rmdir $jail_tmp;
 
   # if only one file in $jail, move it up, and return 

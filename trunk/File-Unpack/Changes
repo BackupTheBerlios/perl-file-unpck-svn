@@ -1,5 +1,9 @@
 Revision history for File-Unpack
 
+0.34	jw, Thu Mar 24 09:24:42 CET 2011
+	Libmagic perl module explodes with malformed utf8, assert LC_ALL=C. 
+	tick-tick now shows file offsets via crude lsof.
+
 0.33	jw, Fri Mar 11 18:04:09 CET 2011
 	run() untaint argv0. needed for running helpers under -T
 	Empty file is text/x-empty now. not application/x-empty.
