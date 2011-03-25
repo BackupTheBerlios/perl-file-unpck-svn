@@ -1,8 +1,10 @@
 Revision history for File-Unpack
 
-0.36	tested with gcc-ejc, parsing lsof output with $u->run() during $u->run(). Yeah!
+0.36	removed dependency on lsof, in favour of /proc and builtin
+        _children_fuser(). tick-tick now shows the percentage of the fastest moving fd.
 
 0.35	tick-tick now shows file offsets via crude lsof.
+        tested with gcc-ejc, parsing lsof output with $u->run() during $u->run(). Yeah!
 
 0.34	jw, Thu Mar 24 09:24:42 CET 2011
 	Libmagic perl module explodes with malformed utf8, assert LC_ALL=C. 

@@ -92,8 +92,8 @@ delete $ENV{ENV};
 # what we name the temporary directories, while helpers are working.
 my $TMPDIR_TEMPL = '_fu_XXXXX';
 
-# used by the tick-tick ticker to show where we are.
-my $lsof = '/usr/bin/lsof';
+# no longer used by the tick-tick ticker to show where we are.
+# my $lsof = '/usr/bin/lsof';
 
 # Compress::Raw::Bunzip2 needs several 100k of input data, we special case this.
 # File::LibMagic wants to read ca. 70k of input data, before it says application/vnd.ms-excel
@@ -1136,16 +1136,31 @@ sub _run_mime_handler
       prog => sub 
 {
   $_[1]{tick}++; 
-  if (-x $lsof)
+  if (my $p = _children_fuser($_[1]{watch}, POSIX::getpid()))
     {
-      my $out;
-      my $name = $_[1]{watch};
-      $name =~ s{^.*/}{};
-      $self->run([$lsof, '-w', '-o', '-Fpco0', $_[1]{watch}], {out_err => \$out});
-      $out =~ s{\0\n}{\0}sg;
-      $out =~ s{\0(\w)}{  $1  }g;
-      # my %out = split($out, /\0/);
-      printf "T: %s SIZE=%d lsof=%s\n", $name, -s $_[1]{watch}, $out; 
+      _fuser_offset($p);
+      # we may get muliple process with multiple filedescriptors.
+      # select the one that moves fastest. 
+      my $largest_diff = -1;
+      for my $pid (keys %$p)
+        {
+	  for my $fd (keys %{$p->{$pid}{fd}})
+	    {
+	      my $diff = ($p->{$pid}{fd}{$fd}{pos}||0) - ($_[1]{fuser}{$pid}{fd}{$fd}{pos}||0);
+	      if ($diff > $largest_diff)
+	        {
+		  $largest_diff = $diff;
+		  $p->{fastest_fd} = $p->{$pid}{fd}{$fd};
+		}
+	    }
+	}
+      # Stick with the one we had before, if none moves.
+      $p->{fastest_fd} = $_[1]{fuser}{fastest_fd} if $largest_diff <= 0;
+      $_[1]{fuser} = $p;
+      my $off = $p->{fastest_fd}{pos}||0;
+      my $tot = $p->{fastest_fd}{size}||(-s $_[1]{watch})||1;
+      my $name = $_[1]{watch}; $name =~ s{.*/}{};
+      printf "T: %s offset=%s (%.1f%%)\n", $name, _unit_bytes($off,1), ($off*100)/$tot;
     }
   else
     {
@@ -1262,6 +1277,104 @@ sub _run_mime_handler
 
   return $unpacked;
 }
+
+sub _children_fuser
+{
+  my ($file, $ppid) = @_;
+  $ppid ||= 1;
+  $file = Cwd::abs_path($file);
+
+  opendir DIR, "/proc" or die "opendir /proc failed: $!\n";
+  my %p = map { $_ => {} } grep { /^\d+$/ } readdir DIR;
+  closedir DIR;
+
+  # get all procs, and their parent pids
+  for my $p (keys %p)
+    {
+      if (open IN, "<", "/proc/$p/stat")
+        {
+	  # don't care if open fails. the process may have exited.
+	  my $text = join '', <IN>;
+	  close IN;
+	  if ($text =~ m{\((.*)\)\s+(\w)\s+(\d+)}s)
+	    {
+	      $p{$p}{cmd} = $1;
+	      $p{$p}{state} = $2;
+	      $p{$p}{ppid} = $3;
+	    }
+	}
+    }
+
+  # Weed out those who are not in our family
+  if ($ppid > 1)
+    {
+      for my $p (keys %p)
+	{
+	  my $family = 0;
+	  my $pid = $p;
+	  while ($pid)
+	    {
+	      # Those that have ppid==1 may also belong to our family. 
+	      # We never know.
+	      if ($pid == $ppid or $pid == 1)
+		{
+		  $family = 1;
+		  last;
+		}
+	      last unless $p{$pid};
+	      $pid = $p{$pid}{ppid};
+	    }
+	  delete $p{$p} unless $family;
+	}
+    }
+
+  my %o; # matching open files are recorded here
+
+  # see what files they have open
+  for my $p (keys %p)
+    {
+      if (opendir DIR, "/proc/$p/fd")
+        {
+	  my @l = grep { /^\d+$/ } readdir DIR;
+	  closedir DIR;
+	  for my $l (@l)
+	    {
+	      my $r = readlink("/proc/$p/fd/$l");
+	      next unless defined $r;
+	      # warn "$p, $l, $r\n";
+	      if ($r eq $file)
+	        {
+	          $o{$p}{cmd} ||= $p{$p}{cmd};
+	          $o{$p}{fd}{$l} = { file => $file };
+		}
+	    }
+	}
+    }
+  return \%o;
+}
+
+# see if we can read the file offset of a file descriptor, and the size of its file.
+sub _fuser_offset
+{
+  my ($p) = @_;
+  for my $pid (keys %$p)
+    {
+      for my $fd (keys %{$p->{$pid}{fd}})
+        {
+	  if (open IN, "/proc/$pid/fdinfo/$fd")
+	    {
+	      while (defined (my $line = <IN>))
+	        {
+		  chomp $line;
+		  $p->{$pid}{fd}{$fd}{$1} = $2 if $line =~ m{^(\w+):\s+(.*)\b};
+		}
+	    }
+	  close IN;
+	  $p->{$pid}{fd}{$fd}{size} = -s $p->{$pid}{fd}{$fd}{file};
+	}
+    }
+}
+
 
 sub _prep_configdir
 {
@@ -1648,7 +1761,8 @@ sub _bytes_unit
 
 sub _unit_bytes
 {
-  my ($number) = @_;
+  my ($number, $dec_places) = @_;
+  $dec_places = 2 unless defined $dec_places;
   my $div = 1;
   my $unit = '';
   my $neg = '';
@@ -1672,7 +1786,7 @@ sub _unit_bytes
 	    }
 	}
     }
-  return sprintf "%s%.2f%s", $neg, ($number / $div), $unit;
+  return sprintf "%s%.*f%s", $neg, $dec_places, ($number / $div), $unit;
 }
 
 # see fs.pm/check_fs_health()
