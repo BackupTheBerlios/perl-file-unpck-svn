@@ -1,5 +1,8 @@
 Revision history for File-Unpack
 
+0.37	Fixed setrlimit() calls, to not explode, when the limit is already lower.
+	Minor cleanup.
+
 0.36	removed dependency on lsof, in favour of /proc and builtin
         _children_fuser(). tick-tick now shows the percentage of the fastest moving fd.
 

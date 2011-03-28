@@ -78,11 +78,11 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.35
+Version 0.37
 
 =cut
 
-our $VERSION = '0.35';
+our $VERSION = '0.37';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -493,10 +493,14 @@ sub new
       eval 
         { 
 	  no strict; 
-	  # if RLIM_INFINITY is seen as an attempt to increase limits, we would fail. Ignore this.
-          BSD::Resource::setrlimit(RLIMIT_FSIZE, $obj{maxfilesize}, RLIM_INFINITY) or
-          BSD::Resource::setrlimit(RLIMIT_FSIZE, $obj{maxfilesize}, $obj{maxfilesize}) or
-	  warn "RLIMIT_FSIZE($obj{maxfilesize}) failed\n";
+	  # helper/application=x-shellscript calls File::Unpack->new(), with defaults...
+	  if ((my $have = (BSD::Resource::getrlimit(RLIMIT_FSIZE))[0]) > $obj{maxfilesize})
+	    {
+	      # if RLIM_INFINITY is seen as an attempt to increase limits, we would fail. Ignore this.
+	      BSD::Resource::setrlimit(RLIMIT_FSIZE, $obj{maxfilesize}, RLIM_INFINITY) or
+	      BSD::Resource::setrlimit(RLIMIT_FSIZE, $obj{maxfilesize}, $obj{maxfilesize}) or
+	      warn "RLIMIT_FSIZE($obj{maxfilesize}), limit=$have failed\n";
+	    }
 	}
        or carp "WARNING maxfilesize=$obj{maxfilesize} ignored:\n $@ $!\n Maybe package perl-BSD-Resource is not installed??\n\n";
     }
@@ -1217,7 +1221,7 @@ sub _run_mime_handler
   # print STDERR "Hmmm, unpacker did not use destname: $args->{destfile}\n" if $self->{verbose} and !defined $wanted_name;
 
   print STDERR "Hmmm, unpacker saw destname: $args->{destfile}, but used destname: $wanted_name\n" 
-    if defined($wanted_name) and $wanted_name ne $args->{destfile};
+    if $self->{verbose} and defined($wanted_name) and $wanted_name ne $args->{destfile};
 
   $wanted_name = $args->{destfile} unless defined $wanted_name;
   my $wanted_path;
