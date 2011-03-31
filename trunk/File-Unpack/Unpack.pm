@@ -494,15 +494,19 @@ sub new
         { 
 	  no strict; 
 	  # helper/application=x-shellscript calls File::Unpack->new(), with defaults...
-	  if ((my $have = (BSD::Resource::getrlimit(RLIMIT_FSIZE))[0]) > $obj{maxfilesize})
+	  my @have = BSD::Resource::getrlimit(RLIMIT_FSIZE);
+	  if ($have[0] == RLIM_INFINITY or $have[0] > $obj{maxfilesize})
 	    {
 	      # if RLIM_INFINITY is seen as an attempt to increase limits, we would fail. Ignore this.
 	      BSD::Resource::setrlimit(RLIMIT_FSIZE, $obj{maxfilesize}, RLIM_INFINITY) or
 	      BSD::Resource::setrlimit(RLIMIT_FSIZE, $obj{maxfilesize}, $obj{maxfilesize}) or
 	      warn "RLIMIT_FSIZE($obj{maxfilesize}), limit=$have failed\n";
 	    }
-	}
-       or carp "WARNING maxfilesize=$obj{maxfilesize} ignored:\n $@ $!\n Maybe package perl-BSD-Resource is not installed??\n\n";
+	};
+       if ($@)
+         {
+           carp "WARNING maxfilesize=$obj{maxfilesize} ignored:\n $@ $!\n Maybe package perl-BSD-Resource is not installed??\n\n";
+         }
     }
 
   $obj{minfree}{factor} = 10    unless defined $obj{minfree}{factor};
@@ -1994,6 +1998,12 @@ sub mime
       # {'File::MimeInfo::Magic' => 'application/x-lzma-compressed-tar'} -- no, that was suffix based!
       # {'File::LibMagic' => ['application/octet-stream; charset=binary','data']}
       $mime2 ||= eval { open my $fd,'<',\$in{buf}; File::MimeInfo::Magic::magic($fd); };
+      #
+      # File::LibMagic misreads monotone-0.99.1/monotone.info-1 as app/bin
+      # File::MimeInfo::Magic::magic() returns undef for that one.
+      # But perl itself does not agree:
+      $mime2 ||= 'text/x-octet-stream' if -T $in{file};
+
       $r[0] = $mime2 if $mime2;
     }
 
