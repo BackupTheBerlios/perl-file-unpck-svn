@@ -1,8 +1,8 @@
 Revision history for File-Unpack
 
-0.38	Both File::LibMagic and File::MimeInfo::Magic fail on info files.
-	Ask perl -T and return text/x-octet-stream in that case.
-	Fixed comparison with RLIM_INFINITY, it evaluates -1.
+0.38	Both File::LibMagic and File::MimeInfo::Magic fail on .info files.
+	We now ask perl -T and return application/x-text-mixed in that case.
+	Fixed comparison with RLIM_INFINITY, silencing false warnings.
 
 0.37	Fixed setrlimit() calls, to not explode, when the limit is already lower.
 	Minor cleanup.

@@ -78,11 +78,11 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.37
+Version 0.38
 
 =cut
 
-our $VERSION = '0.37';
+our $VERSION = '0.38';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -2002,7 +2002,7 @@ sub mime
       # File::LibMagic misreads monotone-0.99.1/monotone.info-1 as app/bin
       # File::MimeInfo::Magic::magic() returns undef for that one.
       # But perl itself does not agree:
-      $mime2 ||= 'text/x-octet-stream' if -T $in{file};
+      $mime2 ||= 'application/x-text-mixed' if -T $in{file};
 
       $r[0] = $mime2 if $mime2;
     }
