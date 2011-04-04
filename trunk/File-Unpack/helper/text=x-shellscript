@@ -59,6 +59,7 @@ BEGIN
 }
 #use Data::Dumper;
 
+my $verbose = 0;
 my $fu = eval "File::Unpack->new(logfile => '/dev/null', verbose => 0);";
 my $flm = File::LibMagic->new() unless defined $fu;
 
@@ -98,7 +99,7 @@ while (defined(my $line = <IN>))
 
 	if (my $m = $fu->mime(fd => \*IN))
 	  {
-print "$lnr: $m->[0], ascii_count=$ascii_count\n";
+	    # print "$lnr: $m->[0], ascii_count=$ascii_count\n" if $verbose;
 	    if ($m->[0] ne 'application/octet-stream')
 	      {
 		seek IN, $new_off, 0;
