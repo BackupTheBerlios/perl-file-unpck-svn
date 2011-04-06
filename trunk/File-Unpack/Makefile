@@ -58,11 +58,11 @@ DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
 NAME = File::Unpack
 NAME_SYM = File_Unpack
-VERSION = 0.38
+VERSION = 0.39
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_38
+VERSION_SYM = 0_39
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.38
+XS_VERSION = 0.39
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -265,7 +265,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = File-Unpack
-DISTVNAME = File-Unpack-0.38
+DISTVNAME = File-Unpack-0.39
 
 
 # --- MakeMaker macro section:
@@ -486,7 +486,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) Generating META.yml
 	$(NOECHO) $(ECHO) '--- #YAML:1.0' > META_new.yml
 	$(NOECHO) $(ECHO) 'name:               File-Unpack' >> META_new.yml
-	$(NOECHO) $(ECHO) 'version:            0.38' >> META_new.yml
+	$(NOECHO) $(ECHO) 'version:            0.39' >> META_new.yml
 	$(NOECHO) $(ECHO) 'abstract:           An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... archive unpacker, based on mime-types' >> META_new.yml
 	$(NOECHO) $(ECHO) 'author:' >> META_new.yml
 	$(NOECHO) $(ECHO) '    - Juergen Weigert <jnw@cpan.org>' >> META_new.yml
@@ -819,7 +819,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd :
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0.38">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0.39">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT>An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... archive unpacker, based on mime-types</ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Juergen Weigert &lt;jnw@cpan.org&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd

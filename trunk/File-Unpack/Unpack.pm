@@ -82,7 +82,7 @@ Version 0.38
 
 =cut
 
-our $VERSION = '0.38';
+our $VERSION = '0.39';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -247,7 +247,7 @@ directly; more can easily be added as mime-type helper plugins.
 
 =head2 new
 
-my $u = new(destdir => '.', logfile => \*STDOUT, maxfilesize => '100M', verbose => 1);
+my $u = new(destdir => '.', logfile => \*STDOUT, maxfilesize => '2G', verbose => 1);
 
 Creates an unpacker instance. The parameter C<destdir> must be a writable location; all output 
 files and directories are placed inside this destdir. Subdirectories will be
@@ -267,8 +267,8 @@ As part of the epilog, a dummy file named "\" with an empty hash is added to the
 It should be ignored while parsing.
 Per default, the logfile is sent to STDOUT. 
 
-The parameter C<maxfilesize> is a safeguard against compressed sparse files. Such files could 
-easily fill up any available disk space when unpacked. Files hitting this limit will 
+The parameter C<maxfilesize> is a safeguard against compressed sparse files and test-files for archivers. 
+Such files could easily fill up any available disk space when unpacked. Files hitting this limit will 
 be silently truncated.  Check the logfile records or epilog to see if this has happened.
 BSD::Resource is used manipulate RLIMIT_FSIZE.
 
@@ -463,8 +463,9 @@ sub new
   $obj{verbose} = 1 unless defined $obj{verbose};
   $obj{destdir} ||= '.';
   $obj{logfile} ||= \*STDOUT;
-  $obj{maxfilesize} = '100M' unless defined $obj{maxfilesize};
+  $obj{maxfilesize} = $ENV{'FILE_UNPACK_MAXFILESIZE'}||'2.5G' unless defined $obj{maxfilesize};
   $obj{maxfilesize} = _bytes_unit($obj{maxfilesize});
+  $ENV{'FILE_UNPACK_MAXFILESIZE'} = $obj{maxfilesize};	# so that children see the same.
 
   mkpath($obj{destdir}); # abs_path is unreliable if destdir does not exist
   $obj{destdir} = Cwd::fast_abs_path($obj{destdir});
@@ -503,10 +504,10 @@ sub new
 	      warn "RLIMIT_FSIZE($obj{maxfilesize}), limit=$have failed\n";
 	    }
 	};
-       if ($@)
-         {
-           carp "WARNING maxfilesize=$obj{maxfilesize} ignored:\n $@ $!\n Maybe package perl-BSD-Resource is not installed??\n\n";
-         }
+      if ($@)
+        {
+          carp "WARNING maxfilesize=$obj{maxfilesize} ignored:\n $@ $!\n Maybe package perl-BSD-Resource is not installed??\n\n";
+        }
     }
 
   $obj{minfree}{factor} = 10    unless defined $obj{minfree}{factor};
@@ -738,6 +739,7 @@ sub unpack
 
   if (-d $archive)
     {
+      $self->_chmod_add($archive, 0700, 0500);
       if (opendir DIR, $archive)
         {
           my @f = sort grep { $_ ne '.' && $_ ne '..' } readdir DIR;
@@ -763,6 +765,7 @@ sub unpack
       if ($self->_not_excluded($subdir, $in_file) and
           !defined($self->{done}{$archive}))
 	{
+          $self->_chmod_add($archive, 0400);
 	  my $m = $self->mime($archive);
 	  my ($h, $more) = $self->find_mime_handler($m);
 	  my $data = { mime => $m->[0] };
@@ -913,6 +916,18 @@ sub unpack
 
   # FIXME: should return nonzero if we had any unrecoverable errors.
   return $self->{error} ? 1 : 0;
+}
+
+sub _chmod_add
+{
+  my ($self, $file, @modes) = @_;
+  $file = $1 if $file =~ m{^(.*)$}m;
+  my $perm = (stat $file)[2] & 07777;
+  printf "_chmod_add(%s, %04o\n", $file, $modes[0];
+  for my $m (@modes)
+    {
+      chmod($perm|$m, $file);	# may or may not succeed. Harmless here.
+    }
 }
 
 =head2 run
@@ -1204,7 +1219,7 @@ sub _run_mime_handler
       closedir DIR;
       my $found0;
          $found0 = $1 if defined($found[0]) and $found[0] =~ m{^(.*)$}s;	# brute force untaint
-      print STDERR "dot_dot_safeguard=$dot_dot_safeguard, i=$i, found=$found0\n" if $self->{verbose} > 1;
+      print STDERR "dot_dot_safeguard=$dot_dot_safeguard, i=$i, found=$found0\n" if $self->{verbose} > 2;
       unless (@found)
         {
 	  rmdir $jail_base;
@@ -1230,6 +1245,29 @@ sub _run_mime_handler
   $wanted_name = $args->{destfile} unless defined $wanted_name;
   my $wanted_path;
      $wanted_path = $destdir . "/" . $wanted_name if defined $wanted_name;
+
+  print "$wanted_path ???????????????????????????????\n";
+  if (defined($wanted_name) and -e $wanted_path)
+    {
+      ## try to come up with a very similar name, just different suffix.
+      ## be compatible with path name shortening in unpack()
+      my $test_path = $wanted_path . '._';
+      for my $i ('', 1..9)
+        {
+	  # All our mime detectors work on file contents, rather than on suffixes.
+	  # Thus messing with the suffix should be okay here.
+	  unless (-e $test_path.$i)
+	    {
+	      print "$test_path $i -> ok\n";
+              $wanted_path = $test_path.$i;
+	      last;
+	    }
+	  else
+	    {
+	      print "$test_path $i -> no\n";
+	    }
+	}
+    }
 
   my $unpacked = $jail_base;
   if (defined($wanted_name) and !-e $wanted_path)
@@ -1760,11 +1798,11 @@ the average compression ratio of the archives.
 sub _bytes_unit
 {
   my ($text) = @_;
-  return $1*1024                if $text =~ m{([\d\.]+)k}i;
-  return $1*1024*1024           if $text =~ m{([\d\.]+)m}i;
-  return $1*1024*1024*1024      if $text =~ m{([\d\.]+)g}i;
-  return $1*1024*1024*1024*1024 if $text =~ m{([\d\.]+)t}i;
-  return $text;
+  return int($1*1024)                if $text =~ m{([\d\.]+)k}i;
+  return int($1*1024*1024)           if $text =~ m{([\d\.]+)m}i;
+  return int($1*1024*1024*1024)      if $text =~ m{([\d\.]+)g}i;
+  return int($1*1024*1024*1024*1024) if $text =~ m{([\d\.]+)t}i;
+  return int($text);
 }
 
 sub _unit_bytes
