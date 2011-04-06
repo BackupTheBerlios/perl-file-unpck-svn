@@ -1246,7 +1246,6 @@ sub _run_mime_handler
   my $wanted_path;
      $wanted_path = $destdir . "/" . $wanted_name if defined $wanted_name;
 
-  print "$wanted_path ???????????????????????????????\n";
   if (defined($wanted_name) and -e $wanted_path)
     {
       ## try to come up with a very similar name, just different suffix.
@@ -1258,13 +1257,8 @@ sub _run_mime_handler
 	  # Thus messing with the suffix should be okay here.
 	  unless (-e $test_path.$i)
 	    {
-	      print "$test_path $i -> ok\n";
               $wanted_path = $test_path.$i;
 	      last;
-	    }
-	  else
-	    {
-	      print "$test_path $i -> no\n";
 	    }
 	}
     }
