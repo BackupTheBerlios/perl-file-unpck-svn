@@ -923,7 +923,6 @@ sub _chmod_add
   my ($self, $file, @modes) = @_;
   $file = $1 if $file =~ m{^(.*)$}m;
   my $perm = (stat $file)[2] & 07777;
-  printf "_chmod_add(%s, %04o\n", $file, $modes[0];
   for my $m (@modes)
     {
       chmod($perm|$m, $file);	# may or may not succeed. Harmless here.
