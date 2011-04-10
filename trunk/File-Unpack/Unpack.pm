@@ -711,6 +711,7 @@ sub unpack
       $self->{json} ||= JSON->new()->ascii(1);
 
       $self->{input} = $archive;
+      $self->{progress_tstamp} = $start_time;
       ($self->{input_dir}, $self->{input_file}) = ($1, $2) if $archive =~ m{^(.*)/([^/]*)$};
 
       my $s = $self->{json}->encode({destdir=>$self->{destdir}, pid=>$$, version=>$VERSION, 
@@ -737,6 +738,12 @@ sub unpack
 
   my @missing_unpacker;
 
+  if ($self->{progress_tstamp} + 10 < $start_time)
+    {
+      printf "T: %d files ...\n", $self->{file_count};
+      $self->{progress_tstamp} = $start_time;
+    }
+
   if (-d $archive)
     {
       $self->_chmod_add($archive, 0700, 0500);
@@ -753,6 +760,7 @@ sub unpack
 	      ## ($inside_destdir means inside $self->{destdir}, actually)
 	      my $new_destdir = $destdir; $new_destdir .= "/$f" if -d $new_in;
 	      $self->unpack($new_in, $new_destdir) unless -l $new_in;
+              $self->{progress_tstamp} = time;
 	    }
 	}
       else
@@ -797,6 +805,7 @@ sub unpack
 	        {
 	          $self->logf($archive => $data);
 		}
+	      $self->{file_count}++;
 	    }
 	  else
 	    {
@@ -833,6 +842,7 @@ sub unpack
 		  $data->{failed} = $h->{fmt_p};
 		  $data->{error} = $unpacked->{error};
 		  $self->logf($archive => $data);
+		  $self->{file_count}++;
 		}
 	      elsif ($unpacked eq "$destdir/$new_name" and 
 	             readlink($unpacked)||'' eq $archive)
@@ -861,6 +871,7 @@ sub unpack
 			  $self->logf($archive => $data);
 			}
 		    }
+		  $self->{file_count}++;
 		}
 	      else
 		{
@@ -872,6 +883,7 @@ sub unpack
 		      $data->{cmd} = $h->{fmt_p};
 		      $data->{unpacked} = $unpacked;
 		      $self->logf($archive => $data);
+		      $self->{file_count}++;
 		    }
 
 		  my $newdestdir = $unpacked;
@@ -888,6 +900,7 @@ sub unpack
 		    {
 		      $self->unpack($unpacked, $newdestdir);
 		    }
+                  $self->{progress_tstamp} = time;
 		}
 	    }
 	}
@@ -895,6 +908,7 @@ sub unpack
   else
     {
       $self->logf($archive => { "skipped" => "special file"});
+      $self->{file_count}++;
     }
 
   if (--$self->{recursion_level} == 0)
@@ -962,6 +976,8 @@ sub run
   my $opt;
      $opt = pop @cmd if ref $cmd[-1] eq 'HASH';
 
+  my $cmdname = $cmd[0][0]; $cmdname =~ s{^.*/}{};
+
   # run the command with 
   # - STDIN closed, unless you specify an { in => ... }
   # - STDERR and STDOUT printed prefixed with 'E: ', 'O: ' to STDOUT, 
@@ -969,8 +985,8 @@ sub run
   $opt->{in}  ||= \undef;
   $opt->{out} ||= $opt->{out_err};
   $opt->{err} ||= $opt->{out_err};
-  $opt->{out} ||= sub { print "O: @_\n"; };
-  $opt->{err} ||= sub { print "E: @_\n"; };
+  $opt->{out} ||= sub { print "O: ($cmdname) @_\n"; };
+  $opt->{err} ||= sub { print "E: ($cmdname) @_\n"; };
 
   my $has_i_redir = 0; 
   my $has_o_redir = 0;
@@ -1029,11 +1045,17 @@ sub run
       eval { $h->pump };
       if ($t && $t->is_expired)
         {
+	  $t->{has_fired}++;
 	  $opt->{prog}->($h, $opt);
 	  $t->start($opt->{every});
 	}
     }
   $h->finish;
+  $opt->{finished} = 1;
+
+  ## call it once more, to get the 100% printout, or somthing else...
+  $opt->{prog}->($h, $opt) if $t->{has_fired};
+
   return wantarray ? $h->full_results : $h->result;
 }
 
@@ -1158,7 +1180,12 @@ sub _run_mime_handler
       prog => sub 
 {
   $_[1]{tick}++; 
-  if (my $p = _children_fuser($_[1]{watch}, POSIX::getpid()))
+  my $name = $_[1]{watch}; $name =~ s{.*/}{};
+  if ($_[1]{finished})
+    {
+      printf "T: %s (%s,  done)\n", $name, _unit_bytes(-s $_[1]{watch},1);
+    }
+  elsif (my $p = _children_fuser($_[1]{watch}, POSIX::getpid()))
     {
       _fuser_offset($p);
       # we may get muliple process with multiple filedescriptors.
@@ -1181,12 +1208,11 @@ sub _run_mime_handler
       $_[1]{fuser} = $p;
       my $off = $p->{fastest_fd}{pos}||0;
       my $tot = $p->{fastest_fd}{size}||(-s $_[1]{watch})||1;
-      my $name = $_[1]{watch}; $name =~ s{.*/}{};
-      printf "T: %s offset=%s (%.1f%%)\n", $name, _unit_bytes($off,1), ($off*100)/$tot;
+      printf "T: %s (%s, %.1f%%)\n", $name, _unit_bytes($off,1), ($off*100)/$tot;
     }
   else
     {
-      print "T: $_[1]{watch} tick_tick $_[1]{tick}\n"; 
+      print "T: $name tick_tick $_[1]{tick}\n"; 
     }
 },
     });
