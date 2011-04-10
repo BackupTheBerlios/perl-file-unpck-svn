@@ -42,6 +42,7 @@ plan tests => (-f $shared_mime_info_db ? 2 * keys %exp : 0) + 5;
 
 if (-f $shared_mime_info_db)
   {
+    my %e = %exp;
     for my $f (@f)
       {
 	my $r = $u->mime("$d/$f");
@@ -53,7 +54,11 @@ if (-f $shared_mime_info_db)
 	$ref = ref($exp{$f}[1]||'')||''; my $r1 = $r->[1]||'';
 	if ($ref eq 'Regexp') { cmp_ok($r1, '=~', $exp{$f}[1],     "$f: \t\t\tcharset=$r1"); }
 	else                  { cmp_ok($r1, 'eq', $exp{$f}[1]||'', "$f: \t\t\tcharset=$r1"); }
+
+	delete $e{$f};
       }
+    # any remainders?
+    diag("no files for \%exp: ", Dumper keys %e) if keys %e;
   }
 else
   {
