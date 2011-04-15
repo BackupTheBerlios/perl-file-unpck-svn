@@ -1,5 +1,8 @@
 Revision history for File-Unpack
 
+	jw, Fri Apr 15 15:31:54 CEST 2011
+	less verbose with differing destnames...
+
 0.39    jw, Wed Apr  6 18:25:26 CEST 2011
 	Try /._\d?/ name suffixes on collisions to avoid _fu_* directories if possible.
 	Added _chmod_add() to help creating readable files and executable directories.

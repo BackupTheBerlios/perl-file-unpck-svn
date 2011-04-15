@@ -1264,8 +1264,9 @@ sub _run_mime_handler
   ## this message is broken.
   # print STDERR "Hmmm, unpacker did not use destname: $args->{destfile}\n" if $self->{verbose} and !defined $wanted_name;
 
+  # say nothing, if $args->{destname} is equal to or a prefix of $wanted_name.
   print STDERR "Hmmm, unpacker saw destname: $args->{destfile}, but used destname: $wanted_name\n" 
-    if $self->{verbose} and defined($wanted_name) and $wanted_name ne $args->{destfile};
+    if $self->{verbose} and defined($wanted_name) and $wanted_name !~ m{^\Q$args->{destfile}};
 
   $wanted_name = $args->{destfile} unless defined $wanted_name;
   my $wanted_path;
