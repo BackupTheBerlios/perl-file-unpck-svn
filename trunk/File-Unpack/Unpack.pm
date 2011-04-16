@@ -78,11 +78,11 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.39
+Version 0.40
 
 =cut
 
-our $VERSION = '0.39';
+our $VERSION = '0.40';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -370,6 +370,9 @@ sub exclude
 
 The C<log> method is used by C<unpack> to send text to the logfile.
 The C<logf> method takes a filename and a hash, and logs a JSON formatted line.
+The trailing newline character of a line is delayed; it is printed by the next call to 
+C<log> or C<logf>. In case of C<logf>, a comma is emitted before the newline 
+from the second call onward.
 
 =end private
 
@@ -387,7 +390,7 @@ sub log
 sub logf
 {
   my ($self,$file,$hash,$suff) = @_;
-  $suff = ",\n" unless defined $suff;
+  $suff = "" unless defined $suff;
   my $json = $self->{json} ||= JSON->new()->ascii(1);
   if (my $fp = $self->{lfp})
     {
@@ -396,8 +399,10 @@ sub logf
       my $str = $json->encode({$file => $hash});
       $str =~ s{^\{}{}s;
       $str =~ s{\}$}{}s;
+      my $pre = " ";
+      $pre = ",\n " if $self->{logf_continuation}++;
       die "logf failed to encode newline char: $str\n" if $str =~ m{(?:\n|\r)};
-      $self->log(" $str$suff");
+      $self->log("$pre$str$suff");
     }
 }
 
@@ -916,8 +921,12 @@ sub unpack
       my $epilog = {end => scalar localtime, sec => time-$start_time };
       $epilog->{missing_unpacker} = \@missing_unpacker if @missing_unpacker;
       my $s = $self->{json}->encode($epilog);
-      # a dummy entry at the end, to compensate for the trailing comma
-      $s =~ s@^{@"/":{}},@;
+
+      ## No longer needed since 0.40:
+      ## a dummy entry at the end, to compensate for the trailing comma
+      # $s =~ s@^{@"/":{}},@;
+
+      $s =~ s@^{@\n},@;
       $self->log($s . "\n");
 
       if ($self->{lfp} ne $self->{logfile})
@@ -1219,14 +1228,18 @@ sub _run_mime_handler
     
   chmod 0700, $jail_base if $self->{jail_chmod0};
   chdir $cwd or die "cannot chdir back to cwd: chdir($cwd): $!";
+  my @nonzero = grep { $_ } @r;
 
   # TODO: handle failure
   # - remove all, 
   # - retry with a fallback handler , if any.
-  print STDERR "Non-Zero return value: $r[0]\n" if $r[0];
+  print STDERR "Non-Zero return value: $r[0]\n" if $nonzero[0];
 
-  # FIXME: we should not die here
-  die "run() failed:\n " . fmt_run_shellcmd(@cmd) . "\n" . Dumper \@r if $r[1];
+  # FIXME: fallback handler not implemented
+  # t/data/pdftxt-a.txt is really plain/text altthough it begins with "PDF-1.4..." and
+  # thus fools the mime-type tests.
+  # should run other handlers, and finally 'strings -' as a trivial fallback.
+  return { error => "run() returned nonzero:\n " . Dumper \@r } if $nonzero[0];
 
   # loop through all _: if it only contains one item , replace it with this item,
   # be it a file or dir. This uses $jail_tmp, an unused pathname.

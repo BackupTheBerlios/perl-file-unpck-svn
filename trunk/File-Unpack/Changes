@@ -1,7 +1,9 @@
 Revision history for File-Unpack
 
-	jw, Fri Apr 15 15:31:54 CEST 2011
+0.40	jw, Fri Apr 15 15:31:54 CEST 2011
 	less verbose with differing destnames...
+	Survive crashes in run(). 
+	logfile json syntax preserved, even when terminating error message. No more trailing dummy "/":{}
 
 0.39    jw, Wed Apr  6 18:25:26 CEST 2011
 	Try /._\d?/ name suffixes on collisions to avoid _fu_* directories if possible.
