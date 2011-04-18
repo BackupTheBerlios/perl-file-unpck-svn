@@ -78,11 +78,11 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.40
+Version 0.41
 
 =cut
 
-our $VERSION = '0.40';
+our $VERSION = '0.41';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -292,6 +292,8 @@ having the obvious meaning.
 Otherwise C<exclude> always returns the list as an array ref.
 
 Symbolic links are always excluded.
+If exclude patterns were effective, or if symlinks were encountered during unpack(), the logfile contains an 
+additional 'skipped' keyword with statistics.
 
 =cut
 
@@ -759,12 +761,23 @@ sub unpack
 	  print STDERR "dir = @f\n" if $self->{verbose} > 1;
 	  for my $f (@f) 
 	    {
-	      next if $self->{exclude}{re} && $f =~ m{$self->{exclude}{re}};
+	      if ($self->{exclude}{re} && $f =~ m{$self->{exclude}{re}})
+                {
+                  $self->{skipped}{exclude}++;
+                }
 	      my $new_in =  "$archive/$f";
 	      ## if $archive is $inside_destdir, then $archive is normally indentical to $destdir.
 	      ## ($inside_destdir means inside $self->{destdir}, actually)
 	      my $new_destdir = $destdir; $new_destdir .= "/$f" if -d $new_in;
-	      $self->unpack($new_in, $new_destdir) unless -l $new_in;
+              if (-l $new_in)
+                {
+                  print STDERR "symlink $new_in: skipped\n" if $self->{verbose} > 1;
+                  $self->{skipped}{symlink}++;
+                }
+	      else
+                { 
+                  $self->unpack($new_in, $new_destdir);
+                }
               $self->{progress_tstamp} = time;
 	    }
 	}
@@ -919,6 +932,7 @@ sub unpack
   if (--$self->{recursion_level} == 0)
     {
       my $epilog = {end => scalar localtime, sec => time-$start_time };
+      $epilog->{skipped} = $self->{skipped} if $self->{skipped};
       $epilog->{missing_unpacker} = \@missing_unpacker if @missing_unpacker;
       my $s = $self->{json}->encode($epilog);
 

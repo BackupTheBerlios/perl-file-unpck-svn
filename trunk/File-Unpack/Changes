@@ -1,5 +1,8 @@
 Revision history for File-Unpack
 
+0.41	jw, Mon Apr 18 14:55:45 CEST 2011
+	Statistics in logfile about skipped (exclude and symlink) files.
+
 0.40	jw, Fri Apr 15 15:31:54 CEST 2011
 	less verbose with differing destnames...
 	Survive crashes in run(). 
