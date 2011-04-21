@@ -11,6 +11,7 @@
 # 2010-09-01, jw -- added --list
 # 2011-01-03, jw -- allow multiple arguments. Improved -m
 # 2011-03-08, jw -- fixed usage of -l, added -p.
+# 2011-04-21, jw -- better format error messages, and stop after error.
 
 use Data::Dumper;
 $Data::Dumper::Terse = 1;
@@ -158,11 +159,11 @@ if ($mime_only)
 
 $u->exclude(vcs => $exclude_vcs);
 $u->exclude(add => \@exclude) if @exclude;
-while (defined $archive)
+while (defined $archive and !$u->{error}) 
   {
     $u->unpack($archive);
-    print Dumper $u->{error} if $u->{error};
-    $archive = shift
+    map { print STDERR "ERROR: $_\n" } @{$u->{error}} if $u->{error};
+    $archive = shift;
   }
 
 # delete $u->{json};

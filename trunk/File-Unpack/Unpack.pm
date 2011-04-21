@@ -78,11 +78,11 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.41
+Version 0.42
 
 =cut
 
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -556,12 +556,17 @@ sub new
 sub DESTROY
 {
   my $self = shift;
-  if ($self->{lfp} and $self->{lfp_printed})
+  if ($self->{lfp})
     {
+      $self->log(sprintf qq[{"pid":"%d", "unpacked":{], $$) unless $self->{lfp_printed};
+      my $r = $self->{recursion_level}||0;
+
       # this should never happen. 
       # always delete $self->{lfp} manually, when done.
       ## {{
-      $self->log(qq[\n}, "error":"unexpected destructor seen; lfp_printed=$self->{lfp_printed}; recursion_level=$self->{recursion_level}"};\n]);
+      my $msg = "unexpected destructor seen";
+      $msg = join('; ', @{$self->{error}}) if $self->{error};
+      $self->log(qq[\n}, "error":"(l=$self->{lfp_printed},r=$r): $msg"}\n]);
       close $self->{lfp} if $self->{lfp} ne $self->{logfile};
       delete $self->{lfp};
       delete $self->{lfp_printed};
@@ -694,12 +699,6 @@ sub unpack
 
   $destdir = $1 if $destdir =~ m{^(.*)$}s;	# brute force untaint
 
-  unless (-e $archive)
-    {
-      push @{$self->{error}}, "unpack('$archive'): no such file or directory";
-      return 1;
-    }
-
   if (($self->{recursion_level}||0) > $RECURSION_LIMIT)
     {
       push @{$self->{error}}, "unpack('$archive','$destdir'): recursion limit $RECURSION_LIMIT";
@@ -727,7 +726,17 @@ sub unpack
       $self->log($s);
     }
 
-  die "internal error" unless $self->{input_dir};
+  unless (-e $archive)
+    {
+      push @{$self->{error}}, "unpack('$archive'): no such file or directory";
+      return 1;
+    }
+
+  unless ($self->{input_dir})
+    {
+      push @{$self->{error}}, "unpack('$archive'); internal error: no {input_dir}";
+      return 1;
+    }
 
   my ($in_dir, $in_file) = ('/', '');
      ($in_dir, $in_file) = ($1, $2) if $archive =~ m{^(.*/)([^/]*)$};
@@ -933,6 +942,7 @@ sub unpack
     {
       my $epilog = {end => scalar localtime, sec => time-$start_time };
       $epilog->{skipped} = $self->{skipped} if $self->{skipped};
+      $epilog->{error}   = $self->{error}   if $self->{error};		# just in case some errors were non-fatal.
       $epilog->{missing_unpacker} = \@missing_unpacker if @missing_unpacker;
       my $s = $self->{json}->encode($epilog);
 

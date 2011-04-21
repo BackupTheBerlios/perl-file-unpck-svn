@@ -1,5 +1,8 @@
 Revision history for File-Unpack
 
+0.42 	jw, Thu Apr 21 15:56:27 CEST 2011
+	Unexpected DESTROY handler closes json logfile properly with an {error} message, if any.
+
 0.41	jw, Mon Apr 18 14:55:45 CEST 2011
 	Statistics in logfile about skipped (exclude and symlink) files.
 
