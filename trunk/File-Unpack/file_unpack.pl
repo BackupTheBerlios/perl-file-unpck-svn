@@ -12,6 +12,7 @@
 # 2011-01-03, jw -- allow multiple arguments. Improved -m
 # 2011-03-08, jw -- fixed usage of -l, added -p.
 # 2011-04-21, jw -- better format error messages, and stop after error.
+# 2011-05-12, jw -- added -n for no_op
 
 use Data::Dumper;
 $Data::Dumper::Terse = 1;
@@ -31,7 +32,7 @@ my $list_only;
 my $list_perlish;
 my @mime_handler_dirs;
 
-my %opt = ( verbose => 1, maxfilesize => '2.6G', one_shot => 0);
+my %opt = ( verbose => 1, maxfilesize => '2.6G', one_shot => 0, no_op => 0);
 
 push @mime_handler_dirs, "$FindBin::RealBin/helper" if -d "$FindBin::RealBin/helper";
 
@@ -47,6 +48,7 @@ GetOptions(
 	"logfile|L=s"  => \$opt{logfile},
 	"one_shot|1"   => \$opt{one_shot},
 	"mimetype|m+"  => \$mime_only,
+	"no_op|no-op|noop|n+" => \$opt{no_op},
 	"list-helpers|l+" => \$list_only,
 	"print-helpers|p+" => \$list_perlish,
 	"unpack-include-dir|I|u=s" => \@mime_handler_dirs,
@@ -109,6 +111,7 @@ Valid options are:
         Do not unpack, just report mimetype of the archive. Output format is 
 	similar to '/usr/bin/file -i', unless -q or -v are given.
 	With -v, the unpacker command is also printed.
+ -n --no-op
 
  -u --use-mime-handler-dir dir
  	Include an additonal directory of mime handlers.
@@ -116,7 +119,7 @@ Valid options are:
 
 }) if $help;
 
-$opt{logfile} ||= '/dev/null' if $list_only or $list_perlish or $mime_only;
+$opt{logfile} ||= '/dev/null' if $list_only or $list_perlish or $mime_only or $opt{no_op};
 my $u = File::Unpack->new(%opt);
 my $list = $u->mime_handler_dir(@mime_handler_dirs);
 
@@ -152,7 +155,7 @@ if ($mime_only)
 	  {
 	    print "$m->[0]\n";
 	  }
-        $archive = shift
+        $archive = shift;
       }
     exit 0;
   }

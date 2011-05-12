@@ -78,11 +78,11 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.42
+Version 0.43
 
 =cut
 
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -275,6 +275,9 @@ BSD::Resource is used manipulate RLIMIT_FSIZE.
 The parameter C<one_shot> can optionally be set to non-zero, to limit unpacking to one step of unpacking.
 Unpacking of well known compressed archives like e.g. '.tar.bz2' is considered one step only. If uncompressing 
 is considered an extra step depends on the configured mime helpers.
+
+The parameter C<no_op> causes unpack() to only print one shell command to STDOUT and exit.
+This implies one_shot=1.
 
 =head2 exclude
 
@@ -481,8 +484,10 @@ sub new
   # used in unpack() to jail mime_handlers deep inside destdir:
   $obj{dot_dot_safeguard} = 20 unless defined $obj{dot_dot_safeguard};
   $obj{jail_chmod0} ||= 0;
-  # used in unpack, blocks recursion after archive unpacking
-  $obj{one_shot} ||= 0;
+  # used in unpack, print only:
+  $obj{no_op} ||= 0;
+  # used in unpack, blocks recursion after archive unpacking:
+  $obj{one_shot} ||= $obj{no_op};
 
   carp "We are running as root: Malicious archives may clobber your filesystem.\n" unless $>;
 
@@ -814,7 +819,7 @@ sub unpack
 	    {
 	      unless ($archive =~ m{^\Q$self->{destdir}\E/})
 		{
-		  mkpath($destdir);
+		  mkpath($destdir) unless $self->{no_op};
 		  my $destdir_in_file;
 		     $destdir_in_file = $1 if "$destdir/$in_file" =~ m{^(.*)$}s; # brute force untaint
 
@@ -836,7 +841,7 @@ sub unpack
 	    }
 	  else
 	    {
-	      mkpath($destdir);
+	      mkpath($destdir) unless $self->{no_op};
 	      $self->{configdir} = $self->_prep_configdir() unless exists $self->{configdir};
 	      my $new_name = $in_file;
 	      
@@ -864,6 +869,7 @@ sub unpack
 	      my $unpacked = $self->_run_mime_handler($h, $archive, $new_name, $destdir, 
 	      				$m->[0], $m->[2], $self->{configdir});
 
+	      return 0 if $self->{no_op};
 	      if (ref $unpacked)
 	        {
 		  $data->{failed} = $h->{fmt_p};
@@ -1161,10 +1167,15 @@ sub _run_mime_handler
   my $dot_dot_safeguard = $self->{dot_dot_safeguard}||0;
   $dot_dot_safeguard = 2 if $dot_dot_safeguard < 2;
 
-  mkpath($destdir);
-  my $jail_base = File::Temp::tempdir($TMPDIR_TEMPL, DIR => $destdir);
-  my $jail = $jail_base . ("/_" x $dot_dot_safeguard);
-  mkpath($jail);
+  my $jail_base = '/dev/null';
+  my $jail = $jail_base;
+  unless ($self->{no_op})
+    {
+      mkpath($destdir);
+      $jail_base = File::Temp::tempdir($TMPDIR_TEMPL, DIR => $destdir);
+      $jail = $jail_base . ("/_" x $dot_dot_safeguard);
+      mkpath($jail);
+    }
 
   my $args = 
     {
@@ -1194,6 +1205,13 @@ sub _run_mime_handler
 	  push @cmd, _subst_args($a, $args);
 	}
     }
+
+  if ($self->{no_op})
+    {
+      print fmt_run_shellcmd(@cmd) . "\n";
+      return undef;
+    }
+
   print STDERR "_run_mime_handler in $destdir: " . fmt_run_shellcmd(@cmd) . "\n" if $self->{verbose} > 1;
 
   my $cwd = getcwd() or carp "cannot fetch initial working directory, getcwd: $!";

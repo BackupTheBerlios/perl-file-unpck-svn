@@ -1,5 +1,8 @@
 Revision history for File-Unpack
 
+0.43 	jw, Thu May 12 13:22:02 CEST 2011
+	Implemented no_op option in _run_mime_handler().
+
 0.42 	jw, Thu Apr 21 15:56:27 CEST 2011
 	Unexpected DESTROY handler closes json logfile properly with an {error} message, if any.
 
