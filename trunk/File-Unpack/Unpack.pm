@@ -78,11 +78,11 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.43
+Version 0.44
 
 =cut
 
-our $VERSION = '0.43';
+our $VERSION = '0.44';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -499,6 +499,8 @@ sub new
     {
       $obj{lfp} = $obj{logfile};
     }
+  # make $obj{lfp} unbuffered, so that other processes can read line by line...
+  $obj{lfp}->autoflush(1); 
   $obj{lfp_printed} = 0;
 
   if ($obj{maxfilesize})
