@@ -32,7 +32,7 @@ my $list_only;
 my $list_perlish;
 my @mime_handler_dirs;
 
-my %opt = ( verbose => 1, maxfilesize => '2.6G', one_shot => 0, no_op => 0);
+my %opt = ( verbose => 1, maxfilesize => '2.6G', one_shot => 0, no_op => 0, world_readable => 0);
 
 push @mime_handler_dirs, "$FindBin::RealBin/helper" if -d "$FindBin::RealBin/helper";
 
@@ -46,12 +46,13 @@ GetOptions(
 	"vcs|include-vcs!" => sub { $exclude_vcs = !$_[1]; },
 	"help|?"       => \$help,
 	"logfile|L=s"  => \$opt{logfile},
-	"one_shot|1"   => \$opt{one_shot},
+	"one-shot|one_shot|1"   => \$opt{one_shot},
 	"mimetype|m+"  => \$mime_only,
 	"no_op|no-op|noop|n+" => \$opt{no_op},
+	"world-readable|world_readable|R+" => \$opt{world_readable},
 	"list-helpers|l+" => \$list_only,
 	"print-helpers|p+" => \$list_perlish,
-	"unpack-include-dir|I|u=s" => \@mime_handler_dirs,
+	"use-mime-handler-dir|I|u=s" => \@mime_handler_dirs,
 	"maxfilesize=s"=> \$opt{maxfilesize},
 ) or $help++;
 
@@ -111,7 +112,12 @@ Valid options are:
         Do not unpack, just report mimetype of the archive. Output format is 
 	similar to '/usr/bin/file -i', unless -q or -v are given.
 	With -v, the unpacker command is also printed.
+
+ -R --world-readable
+ 	Make the unpacked tree world readable. Default: user readable.
+
  -n --no-op
+ 	Do not unpack. Print the first unpack command only.
 
  -u --use-mime-handler-dir dir
  	Include an additonal directory of mime handlers.

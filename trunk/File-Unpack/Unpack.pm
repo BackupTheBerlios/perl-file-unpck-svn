@@ -78,11 +78,10 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.44
-
+Version 0.45
 =cut
 
-our $VERSION = '0.44';
+our $VERSION = '0.45';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -247,7 +246,8 @@ directly; more can easily be added as mime-type helper plugins.
 
 =head2 new
 
-my $u = new(destdir => '.', logfile => \*STDOUT, maxfilesize => '2G', verbose => 1);
+my $u = new(destdir => '.', logfile => \*STDOUT, maxfilesize => '2G', verbose => 1,
+            world_readable => 0, one_shot => 0, no_op => 0);
 
 Creates an unpacker instance. The parameter C<destdir> must be a writable location; all output 
 files and directories are placed inside this destdir. Subdirectories will be
@@ -278,6 +278,9 @@ is considered an extra step depends on the configured mime helpers.
 
 The parameter C<no_op> causes unpack() to only print one shell command to STDOUT and exit.
 This implies one_shot=1.
+
+The parameter C<world_readable> causes unpack() change all directories to 0755, and all files to 444.
+Otherwise 0700 and 0400 (user readable) is asserted.
 
 =head2 exclude
 
@@ -384,10 +387,11 @@ from the second call onward.
 =cut
 sub log
 {
-  my $self = shift;
+  my ($self, $text) = @_;
   if (my $fp = $self->{lfp})
     {
-      print $fp @_;
+      my $r = $fp->syswrite($text);
+      die "$r=log($self->{logfile}): write failed: $text\n" if $r != length($text);
       $self->{lfp_printed}++;
     }
 }
@@ -400,7 +404,7 @@ sub logf
   if (my $fp = $self->{lfp})
     {
       $self->log(qq[{ "oops": "logf used before prolog??",\n"unpacked_files":{\n])
-        unless tell $fp; # }}
+        unless $self->{lfp_printed}; # sysseek($fp, 0, 1); # }}		there is no systell() ...
       my $str = $json->encode({$file => $hash});
       $str =~ s{^\{}{}s;
       $str =~ s{\}$}{}s;
@@ -503,6 +507,15 @@ sub new
   $obj{lfp}->autoflush(1); 
   $obj{lfp_printed} = 0;
 
+  $obj{readable_file_modes} = [ 0400 ];
+  $obj{readable_dir_modes}  = [ 0700, 0500 ];
+
+  if ($obj{world_readable})
+    {
+      unshift @{$obj{readable_file_modes}}, 0444;
+      unshift @{$obj{readable_dir_modes}},  0755;
+    }
+
   if ($obj{maxfilesize})
     {
       eval 
@@ -565,7 +578,7 @@ sub DESTROY
   my $self = shift;
   if ($self->{lfp})
     {
-      $self->log(sprintf qq[{"pid":"%d", "unpacked":{], $$) unless $self->{lfp_printed};
+      $self->log(sprintf(qq[{"pid":"%d", "unpacked":{], $$)) unless $self->{lfp_printed};
       my $r = $self->{recursion_level}||0;
 
       # this should never happen. 
@@ -727,6 +740,7 @@ sub unpack
       $self->{progress_tstamp} = $start_time;
       ($self->{input_dir}, $self->{input_file}) = ($1, $2) if $archive =~ m{^(.*)/([^/]*)$};
 
+      # logfile prolog
       my $s = $self->{json}->encode({destdir=>$self->{destdir}, pid=>$$, version=>$VERSION, 
 		    input => $archive, start => scalar localtime});
       $s =~ s@}$@, "unpacked":{\n@;
@@ -769,7 +783,7 @@ sub unpack
 
   if (-d $archive)
     {
-      $self->_chmod_add($archive, 0700, 0500);
+      $self->_chmod_add($archive, @{$self->{readable_dir_modes}});
       if (opendir DIR, $archive)
         {
           my @f = sort grep { $_ ne '.' && $_ ne '..' } readdir DIR;
@@ -807,7 +821,8 @@ sub unpack
       if ($self->_not_excluded($subdir, $in_file) and
           !defined($self->{done}{$archive}))
 	{
-          $self->_chmod_add($archive, 0400);
+          $self->_chmod_add($archive, @{$self->{readable_file_modes}});
+
 	  my $m = $self->mime($archive);
 	  my ($h, $more) = $self->find_mime_handler($m);
 	  my $data = { mime => $m->[0] };
@@ -973,6 +988,8 @@ sub unpack
   return $self->{error} ? 1 : 0;
 }
 
+# Try a few modes to add to the current permission bits.
+# The first mode that succeeds ends the list.
 sub _chmod_add
 {
   my ($self, $file, @modes) = @_;
@@ -980,7 +997,7 @@ sub _chmod_add
   my $perm = (stat $file)[2] & 07777;
   for my $m (@modes)
     {
-      chmod($perm|$m, $file);	# may or may not succeed. Harmless here.
+      last if chmod($perm|$m, $file);	# may or may not succeed. Harmless here.
     }
 }
 
