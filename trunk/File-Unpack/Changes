@@ -1,3 +1,6 @@
+	jw, Wed Sep  7 16:08:45 CEST 2011
+	No more uninitialized value in printf line 780.
+
 0.45	jw, Fri May 27 13:10:16 CEST 2011
 	Added option world_readable=>1, to assert 0755/0444 modes for dirs/files.
 

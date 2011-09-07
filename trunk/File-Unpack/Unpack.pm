@@ -777,7 +777,7 @@ sub unpack
 
   if ($self->{progress_tstamp} + 10 < $start_time)
     {
-      printf "T: %d files ...\n", $self->{file_count};
+      printf "T: %d files ...\n", $self->{file_count}||0;
       $self->{progress_tstamp} = $start_time;
     }
 
