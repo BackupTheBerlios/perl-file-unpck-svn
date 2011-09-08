@@ -1,5 +1,9 @@
-	jw, Wed Sep  7 16:08:45 CEST 2011
-	No more uninitialized value in printf line 780.
+0.46	jw, Wed Sep  7 16:08:45 CEST 2011
+    	- No more uninitialized value in printf line 780.
+        - Incompatible change: unpacked filenames are now relative to destdir
+	  unless -F or ->new(log_fullname => 1)
+	- New parameter -P or ->new(log_params => {}) to feed params into the 
+	  logfile.
 
 0.45	jw, Fri May 27 13:10:16 CEST 2011
 	Added option world_readable=>1, to assert 0755/0444 modes for dirs/files.
