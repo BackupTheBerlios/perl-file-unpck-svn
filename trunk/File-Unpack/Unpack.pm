@@ -78,10 +78,10 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.45
+Version 0.46
 =cut
 
-our $VERSION = '0.45';
+our $VERSION = '0.46';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -247,7 +247,7 @@ directly; more can easily be added as mime-type helper plugins.
 =head2 new
 
 my $u = new(destdir => '.', logfile => \*STDOUT, maxfilesize => '2G', verbose => 1,
-            world_readable => 0, one_shot => 0, no_op => 0);
+            world_readable => 0, one_shot => 0, no_op => 0, log_params => {});
 
 Creates an unpacker instance. The parameter C<destdir> must be a writable location; all output 
 files and directories are placed inside this destdir. Subdirectories will be
@@ -401,6 +401,7 @@ sub logf
   my ($self,$file,$hash,$suff) = @_;
   $suff = "" unless defined $suff;
   my $json = $self->{json} ||= JSON->new()->ascii(1);
+  $file =~ s{^\Q$self->{destdir}\E/}{} unless $self->{log_fullpath};
   if (my $fp = $self->{lfp})
     {
       $self->log(qq[{ "oops": "logf used before prolog??",\n"unpacked_files":{\n])
@@ -741,8 +742,9 @@ sub unpack
       ($self->{input_dir}, $self->{input_file}) = ($1, $2) if $archive =~ m{^(.*)/([^/]*)$};
 
       # logfile prolog
-      my $s = $self->{json}->encode({destdir=>$self->{destdir}, pid=>$$, version=>$VERSION, 
-		    input => $archive, start => scalar localtime});
+      my $prolog = {destdir=>$self->{destdir}, fu=>$VERSION, pid=>$$, input => $archive, start => scalar localtime};
+      $prolog->{params} = $self->{log_params} if keys %{$self->{log_params}};
+      my $s = $self->{json}->encode($prolog);
       $s =~ s@}$@, "unpacked":{\n@;
       $self->log($s);
     }

@@ -32,28 +32,30 @@ my $list_only;
 my $list_perlish;
 my @mime_handler_dirs;
 
-my %opt = ( verbose => 1, maxfilesize => '2.6G', one_shot => 0, no_op => 0, world_readable => 0);
+my %opt = ( verbose => 1, maxfilesize => '2.6G', one_shot => 0, no_op => 0, world_readable => 0, log_fullpath => 0);
 
 push @mime_handler_dirs, "$FindBin::RealBin/helper" if -d "$FindBin::RealBin/helper";
 
 GetOptions(
-	"verbose|v+"   => \$opt{verbose},
-	"version|V"    => sub { print "$version\n"; exit },
-	"quiet"        => sub { $opt{verbose} = 0; },
-	"destdir|C=s"  => \$opt{destdir},
-	"exclude|E=s"  => \@exclude,
-	"exclude-vcs!" => \$exclude_vcs,
-	"vcs|include-vcs!" => sub { $exclude_vcs = !$_[1]; },
-	"help|?"       => \$help,
-	"logfile|L=s"  => \$opt{logfile},
+	"verbose|v+"   	=> \$opt{verbose},
+	"version|V"    	=> sub { print "$version\n"; exit },
+	"quiet"        	=> sub { $opt{verbose} = 0; },
+	"destdir|D|C=s" => \$opt{destdir},
+	"exclude|E=s"  	=> \@exclude,
+	"exclude-vcs!" 	=> \$exclude_vcs,
+	"vcs|include-vcs!" 	=> sub { $exclude_vcs = !$_[1]; },
+	"help|?"       		=> \$help,
+	"logfile|L=s"  		=> \$opt{logfile},
+	"fullpath-log|F" 	=> \$opt{log_fullpath},
 	"one-shot|one_shot|1"   => \$opt{one_shot},
-	"mimetype|m+"  => \$mime_only,
-	"no_op|no-op|noop|n+" => \$opt{no_op},
-	"world-readable|world_readable|R+" => \$opt{world_readable},
-	"list-helpers|l+" => \$list_only,
-	"print-helpers|p+" => \$list_perlish,
+	"mimetype|m+"  		=> \$mime_only,
+	"no_op|no-op|noop|n+" 	=> \$opt{no_op},
+	"list-helpers|l+" 	=> \$list_only,
+	"print-helpers|p+" 	=> \$list_perlish,
+	"params|P=s"		=> \%{$opt{log_params}},
+	"maxfilesize=s"		=> \$opt{maxfilesize},
 	"use-mime-handler-dir|I|u=s" => \@mime_handler_dirs,
-	"maxfilesize=s"=> \$opt{maxfilesize},
+	"world-readable|world_readable|R+" => \$opt{world_readable},
 ) or $help++;
 
 @mime_handler_dirs = split(/,/,join(',',@mime_handler_dirs));
@@ -71,7 +73,8 @@ Valid options are:
  -v	Be more verbose. Default: $opt{verbose}.
  -q     Be quiet, not verbose.
 
- -C --destdir dir
+ -C 
+ -D --destdir dir
         Directory, where to place the output file or directory.
 	A subdirectory is created, if there are more than one files to unpack.
 	Default: current dir.
@@ -79,6 +82,10 @@ Valid options are:
  -E --exclude glob.pat
  	Specify files and directories that are not unpacked.
 	This option can be specified multiple times.
+
+ -F --fullpath-log
+ 	Always use full path names in logfile. Default: 
+	unpacked path names are written relative to destdir.
 
  --exclude-vcs	--no-exclude-vcs 
  --include-vcs  --no-include-vcs --vcs --no-vcs
@@ -102,6 +109,9 @@ Valid options are:
  -p --print-helpers
  	List all builtin mime-handlers and all external mime-helpers as 
 	a nested perl datastructure.
+
+ -P --param KEY=VALUE
+ 	Place additional params into the log file.
 
  --maxfilesize size
         Truncate an unpacked file, if it gets larger than the specified size.
