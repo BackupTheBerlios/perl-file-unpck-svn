@@ -1,6 +1,11 @@
 #! /usr/bin/perl -w
 #
-# a simplified strings tool, similar to the tool that 
+# stringsx.pl
+#
+# (C) 2011 jnw@cpan.org
+# Distribute under MIT or any GPL license.
+#
+# A simplified strings tool, similar to the tool that 
 # comes with gnu binutils, but with the following differences
 #
 # * no -e switch. We support all encodings simultaneously
@@ -11,6 +16,9 @@
 #   always cut a string. 
 # * Strings need not be '\0' terminated.
 # * no support for file sections. We always scan the entire file.
+#
+# Implemented in both perl and C. Compile the C version, if you 
+# find significant speed issues with the perl version.
 #
 # 2011-11-01, jnw@cpan.org
 
