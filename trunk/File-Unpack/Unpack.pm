@@ -78,10 +78,10 @@ File::Unpack - An aggressive bz2/gz/zip/tar/cpio/rpm/deb/cab/lzma/7z/rar/... arc
 
 =head1 VERSION
 
-Version 0.47
+Version 0.48
 =cut
 
-our $VERSION = '0.47';
+our $VERSION = '0.48';
 
 POSIX::setlocale(&POSIX::LC_ALL, 'C');
 $ENV{PATH} = '/usr/bin:/bin';
@@ -364,7 +364,7 @@ sub exclude
 
   $opt{empty_dir} = $opt{empty_file} = $opt{empty} if defined $opt{empty};
 
-  for my $o qw(empty_file empty_dir force)
+  for my $o (qw(empty_file empty_dir force))
     {
       $self->{exclude}{$o} = $opt{$o} if defined $opt{$o};
     }
@@ -1943,7 +1943,7 @@ sub minfree
   my $self = shift;
   my %opt = @_;
 
-  for my $i qw(factor bytes percent)
+  for my $i (qw(factor bytes percent))
     {
       $self->{minfree}{$i} = $opt{$i} if defined $opt{$i};
       $self->{minfree}{$i} ||= 0;
