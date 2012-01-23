@@ -1,3 +1,6 @@
+0.49	jw, Mon Jan 23 19:12:44 CET 2012
+	- made survive ntop, in{file} must not modify, so that reopen inside mime() works.
+
 0.48	jw, Tue Nov 29 11:23:30 UTC 2011
 	- fixed Use of qw(...) as parentheses. This is deprecated with newer perl.
 
